@@ -13,7 +13,7 @@ Module Module1
     Public strconn As String = "server =" & db_server & ";uid = " & db_uid & ";password = " & db_pwd & "; database =" & db_name & ""
     Public choice As Integer
     Public tag1 As Integer
-    Public operation As Integer   '1 Adding, 2 Searching, or 3 Updating
+    Public operation As Integer   '1 Adding, 2 Searching, and 3 Updating
     Public Sub readquery(ByVal sql As String)
         Try
             With conn

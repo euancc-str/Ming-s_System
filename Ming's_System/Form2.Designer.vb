@@ -36,22 +36,31 @@ Partial Class MainPanel
         txtField5 = New TextBox()
         lblField7 = New Label()
         txtField7 = New TextBox()
-        btnCreate = New Button()
-        btnClose = New Button()
+        btnSave = New Button()
         cbBox1 = New ComboBox()
+        btnDelete = New Button()
+        dgvReport = New DataGridView()
+        btnClear = New Button()
+        Label1 = New Label()
+        cboReport = New ComboBox()
+        btnRunReport = New Button()
+        dgvData = New DataGridView()
+        CType(dgvReport, ComponentModel.ISupportInitialize).BeginInit()
+        CType(dgvData, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' txtField1
         ' 
-        txtField1.Location = New Point(513, 159)
+        txtField1.Font = New Font("Segoe UI", 13F)
+        txtField1.Location = New Point(75, 120)
         txtField1.Name = "txtField1"
-        txtField1.Size = New Size(417, 27)
+        txtField1.Size = New Size(250, 36)
         txtField1.TabIndex = 0
         ' 
         ' lblField1
         ' 
         lblField1.AutoSize = True
-        lblField1.Location = New Point(370, 162)
+        lblField1.Location = New Point(75, 90)
         lblField1.Name = "lblField1"
         lblField1.Size = New Size(83, 20)
         lblField1.TabIndex = 1
@@ -60,17 +69,17 @@ Partial Class MainPanel
         ' lblField
         ' 
         lblField.AutoSize = True
-        lblField.Font = New Font("Segoe UI", 17F)
-        lblField.Location = New Point(600, 49)
+        lblField.Font = New Font("Segoe UI", 15F)
+        lblField.Location = New Point(84, 37)
         lblField.Name = "lblField"
-        lblField.Size = New Size(116, 40)
+        lblField.Size = New Size(175, 35)
         lblField.TabIndex = 2
-        lblField.Text = "Product"
+        lblField.Text = "Record Details"
         ' 
         ' lblField2
         ' 
         lblField2.AutoSize = True
-        lblField2.Location = New Point(370, 211)
+        lblField2.Location = New Point(409, 90)
         lblField2.Name = "lblField2"
         lblField2.Size = New Size(91, 20)
         lblField2.TabIndex = 4
@@ -78,15 +87,16 @@ Partial Class MainPanel
         ' 
         ' txtField2
         ' 
-        txtField2.Location = New Point(513, 208)
+        txtField2.Font = New Font("Segoe UI", 13F)
+        txtField2.Location = New Point(409, 120)
         txtField2.Name = "txtField2"
-        txtField2.Size = New Size(417, 27)
+        txtField2.Size = New Size(289, 36)
         txtField2.TabIndex = 3
         ' 
         ' lblField4
         ' 
         lblField4.AutoSize = True
-        lblField4.Location = New Point(370, 310)
+        lblField4.Location = New Point(1116, 90)
         lblField4.Name = "lblField4"
         lblField4.Size = New Size(49, 20)
         lblField4.TabIndex = 8
@@ -95,7 +105,7 @@ Partial Class MainPanel
         ' lblField3
         ' 
         lblField3.AutoSize = True
-        lblField3.Location = New Point(370, 261)
+        lblField3.Location = New Point(772, 90)
         lblField3.Name = "lblField3"
         lblField3.Size = New Size(94, 20)
         lblField3.TabIndex = 6
@@ -103,15 +113,16 @@ Partial Class MainPanel
         ' 
         ' txtField3
         ' 
-        txtField3.Location = New Point(513, 258)
+        txtField3.Font = New Font("Segoe UI", 13F)
+        txtField3.Location = New Point(772, 120)
         txtField3.Name = "txtField3"
-        txtField3.Size = New Size(417, 27)
+        txtField3.Size = New Size(289, 36)
         txtField3.TabIndex = 5
         ' 
         ' lblField6
         ' 
         lblField6.AutoSize = True
-        lblField6.Location = New Point(370, 405)
+        lblField6.Location = New Point(409, 188)
         lblField6.Name = "lblField6"
         lblField6.Size = New Size(36, 20)
         lblField6.TabIndex = 12
@@ -119,15 +130,16 @@ Partial Class MainPanel
         ' 
         ' txtField6
         ' 
-        txtField6.Location = New Point(513, 402)
+        txtField6.Font = New Font("Segoe UI", 13F)
+        txtField6.Location = New Point(409, 233)
         txtField6.Name = "txtField6"
-        txtField6.Size = New Size(417, 27)
+        txtField6.Size = New Size(289, 36)
         txtField6.TabIndex = 11
         ' 
         ' lblField5
         ' 
         lblField5.AutoSize = True
-        lblField5.Location = New Point(370, 356)
+        lblField5.Location = New Point(75, 188)
         lblField5.Name = "lblField5"
         lblField5.Size = New Size(45, 20)
         lblField5.TabIndex = 10
@@ -135,15 +147,16 @@ Partial Class MainPanel
         ' 
         ' txtField5
         ' 
-        txtField5.Location = New Point(513, 353)
+        txtField5.Font = New Font("Segoe UI", 13F)
+        txtField5.Location = New Point(75, 233)
         txtField5.Name = "txtField5"
-        txtField5.Size = New Size(417, 27)
+        txtField5.Size = New Size(250, 36)
         txtField5.TabIndex = 9
         ' 
         ' lblField7
         ' 
         lblField7.AutoSize = True
-        lblField7.Location = New Point(370, 455)
+        lblField7.Location = New Point(772, 188)
         lblField7.Name = "lblField7"
         lblField7.Size = New Size(88, 20)
         lblField7.TabIndex = 14
@@ -151,46 +164,111 @@ Partial Class MainPanel
         ' 
         ' txtField7
         ' 
-        txtField7.Location = New Point(513, 452)
+        txtField7.Font = New Font("Segoe UI", 13F)
+        txtField7.Location = New Point(772, 233)
         txtField7.Name = "txtField7"
-        txtField7.Size = New Size(417, 27)
+        txtField7.Size = New Size(289, 36)
         txtField7.TabIndex = 13
         ' 
-        ' btnCreate
+        ' btnSave
         ' 
-        btnCreate.Location = New Point(981, 248)
-        btnCreate.Name = "btnCreate"
-        btnCreate.Size = New Size(209, 46)
-        btnCreate.TabIndex = 15
-        btnCreate.Text = "Create"
-        btnCreate.UseVisualStyleBackColor = True
-        ' 
-        ' btnClose
-        ' 
-        btnClose.Location = New Point(981, 307)
-        btnClose.Name = "btnClose"
-        btnClose.Size = New Size(209, 46)
-        btnClose.TabIndex = 16
-        btnClose.Text = "Close"
-        btnClose.UseVisualStyleBackColor = True
+        btnSave.Location = New Point(84, 487)
+        btnSave.Name = "btnSave"
+        btnSave.Size = New Size(220, 61)
+        btnSave.TabIndex = 15
+        btnSave.Text = "Save Record"
+        btnSave.UseVisualStyleBackColor = True
         ' 
         ' cbBox1
         ' 
+        cbBox1.Font = New Font("Segoe UI", 13F)
         cbBox1.FormattingEnabled = True
         cbBox1.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
-        cbBox1.Location = New Point(513, 306)
+        cbBox1.Location = New Point(1116, 120)
         cbBox1.Name = "cbBox1"
-        cbBox1.Size = New Size(417, 28)
+        cbBox1.Size = New Size(299, 38)
         cbBox1.TabIndex = 17
+        ' 
+        ' btnDelete
+        ' 
+        btnDelete.BackColor = Color.Red
+        btnDelete.Location = New Point(1088, 487)
+        btnDelete.Name = "btnDelete"
+        btnDelete.Size = New Size(168, 77)
+        btnDelete.TabIndex = 20
+        btnDelete.Text = "Delete Record?"
+        btnDelete.UseVisualStyleBackColor = False
+        ' 
+        ' dgvReport
+        ' 
+        dgvReport.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvReport.Location = New Point(41, 275)
+        dgvReport.Name = "dgvReport"
+        dgvReport.RowHeadersWidth = 51
+        dgvReport.Size = New Size(1332, 201)
+        dgvReport.TabIndex = 23
+        ' 
+        ' btnClear
+        ' 
+        btnClear.Location = New Point(332, 487)
+        btnClear.Name = "btnClear"
+        btnClear.Size = New Size(225, 61)
+        btnClear.TabIndex = 24
+        btnClear.Text = "Clear"
+        btnClear.UseVisualStyleBackColor = True
+        ' 
+        ' Label1
+        ' 
+        Label1.AutoSize = True
+        Label1.Font = New Font("Segoe UI", 17F)
+        Label1.Location = New Point(41, 569)
+        Label1.Name = "Label1"
+        Label1.Size = New Size(117, 40)
+        Label1.TabIndex = 25
+        Label1.Text = "Records"
+        ' 
+        ' cboReport
+        ' 
+        cboReport.Font = New Font("Segoe UI", 13F)
+        cboReport.FormattingEnabled = True
+        cboReport.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
+        cboReport.Location = New Point(313, 569)
+        cboReport.Name = "cboReport"
+        cboReport.Size = New Size(299, 38)
+        cboReport.TabIndex = 26
+        ' 
+        ' btnRunReport
+        ' 
+        btnRunReport.Location = New Point(728, 561)
+        btnRunReport.Name = "btnRunReport"
+        btnRunReport.Size = New Size(177, 48)
+        btnRunReport.TabIndex = 27
+        btnRunReport.Text = "Load Report"
+        btnRunReport.UseVisualStyleBackColor = True
+        ' 
+        ' dgvData
+        ' 
+        dgvData.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvData.Location = New Point(51, 626)
+        dgvData.Name = "dgvData"
+        dgvData.RowHeadersWidth = 51
+        dgvData.Size = New Size(1309, 243)
+        dgvData.TabIndex = 28
         ' 
         ' MainPanel
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(1368, 620)
+        ClientSize = New Size(1442, 823)
+        Controls.Add(dgvData)
+        Controls.Add(btnRunReport)
+        Controls.Add(cboReport)
+        Controls.Add(Label1)
+        Controls.Add(btnClear)
+        Controls.Add(dgvReport)
+        Controls.Add(btnDelete)
         Controls.Add(cbBox1)
-        Controls.Add(btnClose)
-        Controls.Add(btnCreate)
+        Controls.Add(btnSave)
         Controls.Add(lblField7)
         Controls.Add(txtField7)
         Controls.Add(lblField6)
@@ -207,6 +285,8 @@ Partial Class MainPanel
         Controls.Add(txtField1)
         Name = "MainPanel"
         Text = "Mings"
+        CType(dgvReport, ComponentModel.ISupportInitialize).EndInit()
+        CType(dgvData, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
         PerformLayout()
     End Sub
@@ -225,7 +305,13 @@ Partial Class MainPanel
     Friend WithEvents txtField5 As TextBox
     Friend WithEvents lblField7 As Label
     Friend WithEvents txtField7 As TextBox
-    Friend WithEvents btnCreate As Button
-    Friend WithEvents btnClose As Button
+    Friend WithEvents btnSave As Button
     Friend WithEvents cbBox1 As ComboBox
+    Friend WithEvents btnDelete As Button
+    Friend WithEvents dgvReport As DataGridView
+    Friend WithEvents btnClear As Button
+    Friend WithEvents Label1 As Label
+    Friend WithEvents cboReport As ComboBox
+    Friend WithEvents btnRunReport As Button
+    Friend WithEvents dgvData As DataGridView
 End Class

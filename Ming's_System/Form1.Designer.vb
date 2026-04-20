@@ -32,13 +32,20 @@ Partial Class Form1
         SeriesToolStripMenuItem = New ToolStripMenuItem()
         CustomerToolStripMenuItem = New ToolStripMenuItem()
         TransactionsToolStripMenuItem = New ToolStripMenuItem()
+        RestockFromSupplierToolStripMenuItem = New ToolStripMenuItem()
+        RecordSaleToolStripMenuItem = New ToolStripMenuItem()
+        RecordDeliveryToolStripMenuItem = New ToolStripMenuItem()
+        RecordShipmentToolStripMenuItem = New ToolStripMenuItem()
+        AssignToBranchToolStripMenuItem = New ToolStripMenuItem()
+        AssignWorkScheduleToolStripMenuItem = New ToolStripMenuItem()
+        ViewReportsToolStripMenuItem = New ToolStripMenuItem()
         MenuStrip1.SuspendLayout()
         SuspendLayout()
         ' 
         ' MenuStrip1
         ' 
         MenuStrip1.ImageScalingSize = New Size(20, 20)
-        MenuStrip1.Items.AddRange(New ToolStripItem() {ProductToolStripMenuItem, TransactionsToolStripMenuItem})
+        MenuStrip1.Items.AddRange(New ToolStripItem() {ProductToolStripMenuItem, TransactionsToolStripMenuItem, ViewReportsToolStripMenuItem})
         MenuStrip1.Location = New Point(0, 0)
         MenuStrip1.Name = "MenuStrip1"
         MenuStrip1.Size = New Size(1205, 28)
@@ -90,9 +97,52 @@ Partial Class Form1
         ' 
         ' TransactionsToolStripMenuItem
         ' 
+        TransactionsToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {RestockFromSupplierToolStripMenuItem, RecordSaleToolStripMenuItem, RecordDeliveryToolStripMenuItem, RecordShipmentToolStripMenuItem, AssignToBranchToolStripMenuItem, AssignWorkScheduleToolStripMenuItem})
         TransactionsToolStripMenuItem.Name = "TransactionsToolStripMenuItem"
         TransactionsToolStripMenuItem.Size = New Size(104, 24)
         TransactionsToolStripMenuItem.Text = "Transactions"
+        ' 
+        ' RestockFromSupplierToolStripMenuItem
+        ' 
+        RestockFromSupplierToolStripMenuItem.Name = "RestockFromSupplierToolStripMenuItem"
+        RestockFromSupplierToolStripMenuItem.Size = New Size(240, 26)
+        RestockFromSupplierToolStripMenuItem.Text = "Restock From Supplier"
+        ' 
+        ' RecordSaleToolStripMenuItem
+        ' 
+        RecordSaleToolStripMenuItem.Name = "RecordSaleToolStripMenuItem"
+        RecordSaleToolStripMenuItem.Size = New Size(240, 26)
+        RecordSaleToolStripMenuItem.Text = "Record Sale"
+        ' 
+        ' RecordDeliveryToolStripMenuItem
+        ' 
+        RecordDeliveryToolStripMenuItem.Name = "RecordDeliveryToolStripMenuItem"
+        RecordDeliveryToolStripMenuItem.Size = New Size(240, 26)
+        RecordDeliveryToolStripMenuItem.Text = "Record Delivery"
+        ' 
+        ' RecordShipmentToolStripMenuItem
+        ' 
+        RecordShipmentToolStripMenuItem.Name = "RecordShipmentToolStripMenuItem"
+        RecordShipmentToolStripMenuItem.Size = New Size(240, 26)
+        RecordShipmentToolStripMenuItem.Text = "Record Shipment"
+        ' 
+        ' AssignToBranchToolStripMenuItem
+        ' 
+        AssignToBranchToolStripMenuItem.Name = "AssignToBranchToolStripMenuItem"
+        AssignToBranchToolStripMenuItem.Size = New Size(240, 26)
+        AssignToBranchToolStripMenuItem.Text = "Assign to Branch"
+        ' 
+        ' AssignWorkScheduleToolStripMenuItem
+        ' 
+        AssignWorkScheduleToolStripMenuItem.Name = "AssignWorkScheduleToolStripMenuItem"
+        AssignWorkScheduleToolStripMenuItem.Size = New Size(240, 26)
+        AssignWorkScheduleToolStripMenuItem.Text = "Assign Work Schedule"
+        ' 
+        ' ViewReportsToolStripMenuItem
+        ' 
+        ViewReportsToolStripMenuItem.Name = "ViewReportsToolStripMenuItem"
+        ViewReportsToolStripMenuItem.Size = New Size(110, 24)
+        ViewReportsToolStripMenuItem.Text = "View Reports"
         ' 
         ' Form1
         ' 
@@ -120,5 +170,12 @@ Partial Class Form1
     Friend WithEvents CourierToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents SeriesToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents CustomerToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents RestockFromSupplierToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents RecordSaleToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents RecordDeliveryToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents RecordShipmentToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents AssignToBranchToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents AssignWorkScheduleToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ViewReportsToolStripMenuItem As ToolStripMenuItem
 
 End Class

@@ -62,6 +62,16 @@ Partial Class frmTransaction
         lblStatus = New Label()
         lblShippingDate = New Label()
         dtpShippingDate = New DateTimePicker()
+        txtQuantity = New TextBox()
+        lblQuantity = New Label()
+        cboCourier = New ComboBox()
+        lblCourier = New Label()
+        cboDeliveryType = New ComboBox()
+        lblDelivery = New Label()
+        cboSalesLocation = New ComboBox()
+        lblSalesLocation = New Label()
+        dtpStartTime = New DateTimePicker()
+        lblStartTime = New Label()
         SuspendLayout()
         ' 
         ' lblTransactionHeader
@@ -145,7 +155,7 @@ Partial Class frmTransaction
         dtpReservationDate.CalendarFont = New Font("Segoe UI", 25F)
         dtpReservationDate.Location = New Point(204, 662)
         dtpReservationDate.Name = "dtpReservationDate"
-        dtpReservationDate.Size = New Size(526, 27)
+        dtpReservationDate.Size = New Size(249, 27)
         dtpReservationDate.TabIndex = 8
         ' 
         ' btnProcess
@@ -203,7 +213,7 @@ Partial Class frmTransaction
         ' lblNewColor
         ' 
         lblNewColor.AutoSize = True
-        lblNewColor.Location = New Point(827, 470)
+        lblNewColor.Location = New Point(1263, 549)
         lblNewColor.Name = "lblNewColor"
         lblNewColor.Size = New Size(45, 20)
         lblNewColor.TabIndex = 17
@@ -212,7 +222,7 @@ Partial Class frmTransaction
         ' txtNewColor
         ' 
         txtNewColor.Font = New Font("Segoe UI", 15F)
-        txtNewColor.Location = New Point(827, 493)
+        txtNewColor.Location = New Point(1263, 572)
         txtNewColor.Name = "txtNewColor"
         txtNewColor.Size = New Size(411, 41)
         txtNewColor.TabIndex = 16
@@ -271,7 +281,7 @@ Partial Class frmTransaction
         ' lblNewStockCount
         ' 
         lblNewStockCount.AutoSize = True
-        lblNewStockCount.Location = New Point(1263, 549)
+        lblNewStockCount.Location = New Point(827, 470)
         lblNewStockCount.Name = "lblNewStockCount"
         lblNewStockCount.Size = New Size(88, 20)
         lblNewStockCount.TabIndex = 25
@@ -280,7 +290,7 @@ Partial Class frmTransaction
         ' txtNewStockCount
         ' 
         txtNewStockCount.Font = New Font("Segoe UI", 15F)
-        txtNewStockCount.Location = New Point(1263, 572)
+        txtNewStockCount.Location = New Point(827, 493)
         txtNewStockCount.Name = "txtNewStockCount"
         txtNewStockCount.Size = New Size(411, 41)
         txtNewStockCount.TabIndex = 24
@@ -412,7 +422,7 @@ Partial Class frmTransaction
         ' lblShippingDate
         ' 
         lblShippingDate.AutoSize = True
-        lblShippingDate.Location = New Point(473, 715)
+        lblShippingDate.Location = New Point(473, 638)
         lblShippingDate.Name = "lblShippingDate"
         lblShippingDate.Size = New Size(104, 20)
         lblShippingDate.TabIndex = 38
@@ -421,16 +431,120 @@ Partial Class frmTransaction
         ' dtpShippingDate
         ' 
         dtpShippingDate.CalendarFont = New Font("Segoe UI", 25F)
-        dtpShippingDate.Location = New Point(473, 739)
+        dtpShippingDate.Location = New Point(473, 662)
         dtpShippingDate.Name = "dtpShippingDate"
         dtpShippingDate.Size = New Size(257, 27)
         dtpShippingDate.TabIndex = 40
+        ' 
+        ' txtQuantity
+        ' 
+        txtQuantity.Font = New Font("Segoe UI", 15F)
+        txtQuantity.Location = New Point(473, 739)
+        txtQuantity.Name = "txtQuantity"
+        txtQuantity.Size = New Size(257, 41)
+        txtQuantity.TabIndex = 42
+        ' 
+        ' lblQuantity
+        ' 
+        lblQuantity.AutoSize = True
+        lblQuantity.Font = New Font("Segoe UI", 10F)
+        lblQuantity.Location = New Point(467, 713)
+        lblQuantity.Name = "lblQuantity"
+        lblQuantity.Size = New Size(76, 23)
+        lblQuantity.TabIndex = 41
+        lblQuantity.Text = "Quantity"
+        ' 
+        ' cboCourier
+        ' 
+        cboCourier.Font = New Font("Segoe UI", 15F)
+        cboCourier.FormattingEnabled = True
+        cboCourier.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
+        cboCourier.Location = New Point(210, 823)
+        cboCourier.Name = "cboCourier"
+        cboCourier.Size = New Size(243, 43)
+        cboCourier.TabIndex = 44
+        ' 
+        ' lblCourier
+        ' 
+        lblCourier.AutoSize = True
+        lblCourier.Location = New Point(210, 800)
+        lblCourier.Name = "lblCourier"
+        lblCourier.Size = New Size(57, 20)
+        lblCourier.TabIndex = 43
+        lblCourier.Text = "Courier"
+        ' 
+        ' cboDeliveryType
+        ' 
+        cboDeliveryType.Font = New Font("Segoe UI", 15F)
+        cboDeliveryType.FormattingEnabled = True
+        cboDeliveryType.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
+        cboDeliveryType.Location = New Point(473, 823)
+        cboDeliveryType.Name = "cboDeliveryType"
+        cboDeliveryType.Size = New Size(257, 43)
+        cboDeliveryType.TabIndex = 46
+        ' 
+        ' lblDelivery
+        ' 
+        lblDelivery.AutoSize = True
+        lblDelivery.Location = New Point(473, 800)
+        lblDelivery.Name = "lblDelivery"
+        lblDelivery.Size = New Size(98, 20)
+        lblDelivery.TabIndex = 45
+        lblDelivery.Text = "Delivery Type"
+        ' 
+        ' cboSalesLocation
+        ' 
+        cboSalesLocation.Font = New Font("Segoe UI", 15F)
+        cboSalesLocation.FormattingEnabled = True
+        cboSalesLocation.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
+        cboSalesLocation.Location = New Point(210, 906)
+        cboSalesLocation.Name = "cboSalesLocation"
+        cboSalesLocation.Size = New Size(243, 43)
+        cboSalesLocation.TabIndex = 48
+        ' 
+        ' lblSalesLocation
+        ' 
+        lblSalesLocation.AutoSize = True
+        lblSalesLocation.Location = New Point(210, 883)
+        lblSalesLocation.Name = "lblSalesLocation"
+        lblSalesLocation.Size = New Size(104, 20)
+        lblSalesLocation.TabIndex = 47
+        lblSalesLocation.Text = "Sales Location"
+        ' 
+        ' dtpStartTime
+        ' 
+        dtpStartTime.CalendarFont = New Font("Segoe UI", 25F)
+        dtpStartTime.Format = DateTimePickerFormat.Time
+        dtpStartTime.Location = New Point(467, 916)
+        dtpStartTime.Name = "dtpStartTime"
+        dtpStartTime.ShowUpDown = True
+        dtpStartTime.Size = New Size(257, 27)
+        dtpStartTime.TabIndex = 50
+        ' 
+        ' lblStartTime
+        ' 
+        lblStartTime.AutoSize = True
+        lblStartTime.Location = New Point(467, 892)
+        lblStartTime.Name = "lblStartTime"
+        lblStartTime.Size = New Size(77, 20)
+        lblStartTime.TabIndex = 49
+        lblStartTime.Text = "Start Time"
         ' 
         ' frmTransaction
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(1784, 915)
+        ClientSize = New Size(1811, 961)
+        Controls.Add(dtpStartTime)
+        Controls.Add(lblStartTime)
+        Controls.Add(cboSalesLocation)
+        Controls.Add(lblSalesLocation)
+        Controls.Add(cboDeliveryType)
+        Controls.Add(lblDelivery)
+        Controls.Add(cboCourier)
+        Controls.Add(lblCourier)
+        Controls.Add(txtQuantity)
+        Controls.Add(lblQuantity)
         Controls.Add(dtpShippingDate)
         Controls.Add(lblShippingDate)
         Controls.Add(cboStatus)
@@ -517,4 +631,14 @@ Partial Class frmTransaction
     Friend WithEvents lblStatus As Label
     Friend WithEvents lblShippingDate As Label
     Friend WithEvents dtpShippingDate As DateTimePicker
+    Friend WithEvents txtQuantity As TextBox
+    Friend WithEvents lblQuantity As Label
+    Friend WithEvents cboCourier As ComboBox
+    Friend WithEvents lblCourier As Label
+    Friend WithEvents cboDeliveryType As ComboBox
+    Friend WithEvents lblDelivery As Label
+    Friend WithEvents cboSalesLocation As ComboBox
+    Friend WithEvents lblSalesLocation As Label
+    Friend WithEvents dtpStartTime As DateTimePicker
+    Friend WithEvents lblStartTime As Label
 End Class

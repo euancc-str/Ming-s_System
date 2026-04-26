@@ -1,27 +1,70 @@
 ﻿Imports MySql.Data.MySqlClient
+Imports Mysqlx
 
 Public Class MainPanel
 
     Private currentID As Integer = 0
     Private currentTimestamp As String = ""
     Private selQty As Integer = 0
-    Private currentCustID As Integer = 0   ' ← ADD
+    Private currentCustID As Integer = 0
     Private currentProdID As Integer = 0
+    Private currentOrderDate As String = ""
+
     Private Sub PriceOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtField2.KeyPress, txtField3.KeyPress
         If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) AndAlso (e.KeyChar <> "."c) Then
-            e.Handled = True ' Block the keystroke
+            e.Handled = True
         End If
-        ' Prevent a second decimal point from being typed
         If (e.KeyChar = "."c) AndAlso (CType(sender, TextBox).Text.IndexOf("."c) > -1) Then
             e.Handled = True
         End If
     End Sub
 
-    ' 2. Only allow Whole Numbers (For Stock/Quantity)
     Private Sub WholeNumberOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtField7.KeyPress
         If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then
-            e.Handled = True ' Block the keystroke (No decimals or letters allowed)
+            e.Handled = True
         End If
+    End Sub
+    Private Sub showReports()
+        btnSave.Visible = False : btnClear.Visible = False : btnDelete.Visible = False
+        dgvData.Visible = False
+
+        If txtSearch IsNot Nothing Then txtSearch.Visible = True
+        txtField1.Visible = False : txtField2.Visible = False : txtField3.Visible = False
+        txtField5.Visible = False : txtField6.Visible = False : txtField7.Visible = False
+        cbBox1.Visible = False
+        lblField1.Visible = False : lblField2.Visible = False : lblField3.Visible = False
+        lblField4.Visible = False : lblField5.Visible = False : lblField6.Visible = False
+        lblField7.Visible = False
+        lblSeries.Visible = False : cboSeries.Visible = False
+
+        lblField.Text = "SELECT REPORT:"
+        cboReport.Items.Clear()
+        cboReport.Items.Add("0 - Executive Business Snapshot")
+        cboReport.Items.Add("1 - Branch Inventory Overview")
+        cboReport.Items.Add("2 - Sales Performance by Customer")
+        cboReport.Items.Add("3 - Supplier Restock History")
+        cboReport.Items.Add("4 - Low Stock Alert (Stock <= 5)")
+        cboReport.Items.Add("5 - Full Supply Chain Trace")
+
+        Label1.Location = New Point(40, 148)
+        Label1.Visible = True
+
+        If txtSearch IsNot Nothing Then
+            txtSearch.Location = New Point(Label1.Location.X + Label1.Width + 10, 148)
+            txtSearch.Visible = True
+        End If
+
+        cboReport.Location = New Point(txtSearch.Location.X + txtSearch.Width + 50, 148)
+        cboReport.Visible = True
+
+        btnRunReport.Location = New Point(cboReport.Location.X + cboReport.Width + 10, 148)
+        btnRunReport.Visible = True
+        dgvReport.Visible = True
+
+        ' Auto-Run the Dashboard
+        cboReport.SelectedIndex = 0
+        btnRunReport.PerformClick()
+        Return
     End Sub
     Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.WindowState = FormWindowState.Maximized
@@ -40,42 +83,7 @@ Public Class MainPanel
         End While
 
         If operation = 5 Then
-            btnSave.Visible = False : btnClear.Visible = False : btnDelete.Visible = False
-            dgvData.Visible = False
-
-            If txtSearch IsNot Nothing Then txtSearch.Visible = True
-            txtField1.Visible = False : txtField2.Visible = False : txtField3.Visible = False
-            txtField5.Visible = False : txtField6.Visible = False : txtField7.Visible = False
-            cbBox1.Visible = False
-            lblField1.Visible = False : lblField2.Visible = False : lblField3.Visible = False
-            lblField4.Visible = False : lblField5.Visible = False : lblField6.Visible = False
-            lblField7.Visible = False
-            lblSeries.Visible = False : cboSeries.Visible = False
-
-            lblField.Text = "SELECT REPORT:"
-            cboReport.Items.Clear()
-            cboReport.Items.Add("1 - Branch Inventory Overview")
-            cboReport.Items.Add("2 - Sales Performance by Customer")
-            cboReport.Items.Add("3 - Supplier Restock History")
-            cboReport.Items.Add("4 - Low Stock Alert (Stock <= 5)")
-            cboReport.Items.Add("5 - Full Supply Chain Trace")
-
-            Label1.Location = New Point(40, 148)
-            Label1.Visible = True
-
-            If txtSearch IsNot Nothing Then
-                txtSearch.Location = New Point(Label1.Location.X + Label1.Width + 10, 148)
-                txtSearch.Visible = True
-            End If
-
-            cboReport.Location = New Point(txtSearch.Location.X + txtSearch.Width + 50, 148)
-            cboReport.Visible = True
-
-            btnRunReport.Location = New Point(cboReport.Location.X + cboReport.Width + 10, 148)
-            btnRunReport.Visible = True
-
-            dgvReport.Visible = True
-
+            showReports()
             Return
         End If
 
@@ -145,10 +153,48 @@ Public Class MainPanel
             btnSave.Text = "✔ Mark Delivered"
             btnClear.Visible = True
         End If
-
-
         LoadGridData()
     End Sub
+
+    Private Function generateSearchQuery(searchVal As String) As String
+        Dim sql As String = ""
+        If choice = 1 Then
+            Sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.status AS Status, p.stock_count AS Stock, s.series_name AS Series " &
+                  "FROM product p LEFT JOIN series s ON p.series_id = s.series_id"
+            If searchVal <> "" Then Sql &= " WHERE p.item_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 2 Then
+            Sql = "SELECT supplier_id AS ID, company_name AS Company, contact_person AS Contact FROM supplier"
+            If searchVal <> "" Then Sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 3 Then
+            Sql = "SELECT customer_id AS ID, customer_name AS Name, address AS Address FROM customer"
+            If searchVal <> "" Then Sql &= " WHERE customer_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 4 Then
+            Sql = "SELECT employee_id AS ID, employee_name AS Name, role AS Role FROM employee"
+            If searchVal <> "" Then Sql &= " WHERE employee_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 5 Then
+            Sql = "SELECT courier_id AS ID, company_name AS Company, contact_number AS Contact FROM courier"
+            If searchVal <> "" Then Sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 6 Then
+            Sql = "SELECT series_id AS ID, series_name AS Name, release_year AS Year FROM series"
+            If searchVal <> "" Then Sql &= " WHERE series_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 7 Then
+            Sql = "SELECT branch_id AS ID, branch_name AS Name, address AS Address, operating_hours AS 'Operating Hours' FROM branch"
+            If searchVal <> "" Then Sql &= " WHERE branch_name LIKE '%" & searchVal & "%'"
+        ElseIf choice = 8 Then
+            Sql = "SELECT pu.customer_id AS CustID, pu.product_id AS ProdID, " &
+                  "c.customer_name AS Customer, p.item_name AS Product, " &
+                  "pu.quantity AS Qty, pu.reservation_date AS 'Order Date', " &
+                  "pu.status AS Status " &
+                  "FROM purchases pu " &
+                  "INNER JOIN customer c ON pu.customer_id = c.customer_id " &
+                  "INNER JOIN product p ON pu.product_id = p.product_id"
+            If searchVal <> "" Then
+                Sql &= " WHERE (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%')"
+            End If
+            Sql &= " ORDER BY pu.reservation_date DESC"
+        End If
+        Return Sql
+    End Function
 
     Private Sub LoadGridData()
         Dim sql As String = ""
@@ -159,42 +205,8 @@ Public Class MainPanel
         End If
 
         Try
-            If choice = 1 Then
-                sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.status AS Status, p.stock_count AS Stock, s.series_name AS Series " &
-                      "FROM product p LEFT JOIN series s ON p.series_id = s.series_id"
-                If searchVal <> "" Then sql &= " WHERE p.item_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 2 Then
-                sql = "SELECT supplier_id AS ID, company_name AS Company, contact_person AS Contact FROM supplier"
-                If searchVal <> "" Then sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 3 Then
-                sql = "SELECT customer_id AS ID, customer_name AS Name, address AS Address FROM customer"
-                If searchVal <> "" Then sql &= " WHERE customer_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 4 Then
-                sql = "SELECT employee_id AS ID, employee_name AS Name, role AS Role FROM employee"
-                If searchVal <> "" Then sql &= " WHERE employee_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 5 Then
-                sql = "SELECT courier_id AS ID, company_name AS Company, contact_number AS Contact FROM courier"
-                If searchVal <> "" Then sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 6 Then
-                sql = "SELECT series_id AS ID, series_name AS Name, release_year AS Year FROM series"
-                If searchVal <> "" Then sql &= " WHERE series_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 7 Then
-                sql = "SELECT branch_id AS ID, branch_name AS Name, address AS Address, operating_hours AS 'Operating Hours' FROM branch"
-                If searchVal <> "" Then sql &= " WHERE branch_name LIKE '%" & searchVal & "%'"
-            ElseIf choice = 8 Then
-                sql = "SELECT pu.customer_id AS CustID, pu.product_id AS ProdID, " &
-          "c.customer_name AS Customer, p.item_name AS Product, " &
-          "pu.quantity AS Qty, pu.reservation_date AS 'Order Date', " &
-          "pu.status AS Status " &
-          "FROM purchases pu " &
-          "INNER JOIN customer c ON pu.customer_id = c.customer_id " &
-          "INNER JOIN product p ON pu.product_id = p.product_id"
-                If searchVal <> "" Then
-                    sql &= " WHERE (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%')"
-                End If
-                sql &= " ORDER BY pu.reservation_date DESC"
-            End If
 
+            sql = generateSearchQuery(searchVal)
             dgvData.DataSource = getDataTable(sql)
             dgvData.AutoResizeColumns()
         Catch ex As Exception
@@ -217,31 +229,45 @@ Public Class MainPanel
                 currentCustID = Val(row.Cells("CustID").Value.ToString())
                 currentProdID = Val(row.Cells("ProdID").Value.ToString())
                 selQty = Val(row.Cells("Qty").Value.ToString())
+                Dim rawDate As String = row.Cells("Order Date").Value.ToString()
+                Dim parsedDate As DateTime
+                If DateTime.TryParse(rawDate, parsedDate) Then
+
+                    currentOrderDate = parsedDate.ToString("yyyy-MM-dd HH:mm:ss")
+
+
+                    txtField3.Text = parsedDate.ToString("yyyy-MM-dd HH:mm:ss")
+                Else
+                    currentOrderDate = rawDate ' Failsafe
+                    txtField3.Text = rawDate
+                End If
 
                 txtField1.Text = row.Cells("Customer").Value.ToString()
                 txtField2.Text = row.Cells("Product").Value.ToString()
-                txtField3.Text = row.Cells("Order Date").Value.ToString()
+                txtField3.Text = currentOrderDate
 
                 Dim status As String = row.Cells("Status").Value.ToString()
-                If status = "Delivered" OrElse status = "Cancelled" Then
-                    btnSave.Enabled = False : btnDelete.Enabled = False
-                    MsgBox("This order is already " & status & ".", MsgBoxStyle.Information)
+                If status = "Pending" Then
+                    btnSave.Enabled = True : btnSave.Text = "✔ Mark Delivered"
+                    btnDelete.Enabled = True : btnDelete.Text = "Cancel Order"
+                ElseIf status = "Delivered" Then
+                    btnSave.Enabled = False : btnSave.Text = "Already Delivered"
+                    btnDelete.Enabled = True : btnDelete.Text = "Process Return"
                 Else
-                    btnSave.Enabled = True : btnDelete.Enabled = True
+                    btnSave.Enabled = False : btnSave.Text = status
+                    btnDelete.Enabled = False : btnDelete.Text = "Locked"
                 End If
-                btnSave.Text = "✔ Mark Delivered"
                 Return
             End If
+
             currentID = Val(row.Cells("ID").Value.ToString())
-
             LoadRecordDetails(currentID)
-
             btnDelete.Enabled = True
             btnSave.Text = "Update Record"
         End If
     End Sub
 
-    Private Sub LoadRecordDetails(id As Integer)
+    Private Function returnQuery(id As Integer) As String
         Dim str As String = ""
         If choice = 1 Then str = "SELECT p.*, s.series_name FROM product p LEFT JOIN series s ON p.series_id = s.series_id WHERE p.product_id = " & id
         If choice = 2 Then str = "SELECT * FROM supplier WHERE supplier_id = " & id
@@ -250,7 +276,12 @@ Public Class MainPanel
         If choice = 5 Then str = "SELECT * FROM courier WHERE courier_id = " & id
         If choice = 6 Then str = "SELECT * FROM series WHERE series_id = " & id
         If choice = 7 Then str = "SELECT * FROM branch WHERE branch_id = " & id
+        Return str
 
+    End Function
+    Private Sub LoadRecordDetails(id As Integer)
+
+        Dim str As String = returnQuery(id)
         Try
             readquery(str)
             If cmdread.Read() Then
@@ -298,6 +329,94 @@ Public Class MainPanel
         End Try
     End Sub
 
+    Private Function isSellingPriceValid() As Boolean
+        If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" OrElse txtField5.Text.Trim() = "" OrElse txtField6.Text.Trim() = "" OrElse txtField7.Text.Trim() = "" OrElse cbBox1.Text.Trim() = "" Then
+            MsgBox("Please completely fill out all product details.", MsgBoxStyle.Exclamation)
+            Return False
+        End If
+        Dim bPrice, sPrice As Double
+        Dim stock As Integer
+        If Not Double.TryParse(txtField2.Text.Trim(), bPrice) Then MsgBox("Buying price must be a valid number.", MsgBoxStyle.Exclamation) : Return False
+        If Not Double.TryParse(txtField3.Text.Trim(), sPrice) Then MsgBox("Selling price must be a valid number.", MsgBoxStyle.Exclamation) : Return False
+        If Not Integer.TryParse(txtField7.Text.Trim(), stock) Then MsgBox("Stock count must be a whole number.", MsgBoxStyle.Exclamation) : Return False
+
+        If bPrice < 0 OrElse sPrice < 0 Then
+            MsgBox("Prices cannot be negative.", MsgBoxStyle.Exclamation, "Invalid Entry") : Return False
+        End If
+        If sPrice <= bPrice Then
+            Dim warn = MsgBox("The Selling Price is lower than or equal to the Buying Price. This will result in a loss. Proceed anyway?", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Profit Margin Warning")
+            If warn = MsgBoxResult.No Then Return False
+        End If
+        Return True
+    End Function
+
+    Private Sub processOrderDelivery()
+        Try
+            Dim checkFinance As String = "SELECT pu.down_payment, pu.shipping_fee, pu.quantity, p.selling_price " &
+                                         "FROM purchases pu INNER JOIN product p ON pu.product_id = p.product_id " &
+                                         "WHERE pu.customer_id = " & currentCustID & " AND pu.product_id = " & currentProdID &
+                                         " AND pu.reservation_date = '" & currentOrderDate & "'"
+            readquery(checkFinance)
+
+            If cmdread.HasRows Then
+                cmdread.Read()
+                Dim dp As Double = Val(cmdread("down_payment").ToString())
+                Dim sf As Double = Val(cmdread("shipping_fee").ToString())
+                Dim qty As Integer = Val(cmdread("quantity").ToString())
+                Dim sp As Double = Val(cmdread("selling_price").ToString())
+
+                Dim grandTotal As Double = (sp * qty) + sf
+
+                If dp < grandTotal Then
+                    Dim overrideAns = MsgBox("WARNING: This order has an unpaid balance!" & vbCrLf &
+                           "System Paid: ₱" & dp & vbCrLf & "Grand Total: ₱" & grandTotal & vbCrLf & vbCrLf &
+                           "Did the customer pay the remaining balance directly? Click YES to override and force delivery.", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Balance Due Warning")
+
+                    ' If they click No, stop the process. If they click Yes, it skips this and continues to delivery
+                    If overrideAns = MsgBoxResult.No Then
+                        Return
+                    End If
+                End If
+            End If
+
+            ' Final confirmation
+            If MsgBox("Confirm marking this order as Delivered?", MsgBoxStyle.YesNo + MsgBoxStyle.Question) = MsgBoxResult.Yes Then
+                readquery("UPDATE purchases SET status = 'Delivered' WHERE customer_id = " & currentCustID &
+                          " AND product_id = " & currentProdID & " AND reservation_date = '" & currentOrderDate & "'")
+                MsgBox("Order fulfilled!")
+                LoadGridData() : btnClear.PerformClick()
+            End If
+        Catch ex As Exception
+            MsgBox("Error updating order: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub entityIsExisting()
+
+        Dim checkQuery As String = ""
+        If choice = 1 Then checkQuery = "SELECT product_id FROM product WHERE item_name = '" & txtField1.Text.Trim() & "' AND color = '" & txtField5.Text.Trim() & "' AND size = '" & txtField6.Text.Trim() & "'"
+        If choice = 2 Then checkQuery = "SELECT supplier_id FROM supplier WHERE company_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 3 Then checkQuery = "SELECT customer_id FROM customer WHERE customer_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 4 Then checkQuery = "SELECT employee_id FROM employee WHERE employee_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 5 Then checkQuery = "SELECT courier_id FROM courier WHERE company_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 6 Then checkQuery = "SELECT series_id FROM series WHERE series_name = '" & txtField1.Text.Trim() & "'"
+
+        readquery(checkQuery)
+    End Sub
+
+    Private Function handleDuplicateProduct() As Boolean
+        Dim ans = MsgBox("This product already exists. Do you want to add the stock count (" & txtField7.Text.Trim() & ") to the existing inventory instead of creating a duplicate?", MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Duplicate Found")
+
+        If ans = MsgBoxResult.Yes Then
+            Dim stockToAdd As Integer = Integer.Parse(txtField7.Text.Trim())
+            readquery("UPDATE product SET stock_count = COALESCE(stock_count, 0) + " & stockToAdd & " WHERE item_name = '" & txtField1.Text.Trim() & "'")
+            MsgBox("Stock count successfully updated for the existing product!", MsgBoxStyle.Information)
+            LoadGridData()
+            btnClear.PerformClick()
+            Return True
+        End If
+        Return False
+    End Function
     Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         If txtField1.Text.Trim() = "" Then
             MsgBox("Please enter a valid name in the first field.", MsgBoxStyle.Exclamation)
@@ -305,24 +424,7 @@ Public Class MainPanel
         End If
 
         If choice = 1 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" OrElse txtField5.Text.Trim() = "" OrElse txtField6.Text.Trim() = "" OrElse txtField7.Text.Trim() = "" OrElse cbBox1.Text.Trim() = "" Then
-                MsgBox("Please completely fill out all product details.", MsgBoxStyle.Exclamation)
-                Return
-            End If
-            Dim bPrice, sPrice As Double
-            Dim stock As Integer
-            If Not Double.TryParse(txtField2.Text.Trim(), bPrice) Then MsgBox("Buying price must be a valid number.", MsgBoxStyle.Exclamation) : Return
-            If Not Double.TryParse(txtField3.Text.Trim(), sPrice) Then MsgBox("Selling price must be a valid number.", MsgBoxStyle.Exclamation) : Return
-            If Not Integer.TryParse(txtField7.Text.Trim(), stock) Then MsgBox("Stock count must be a whole number.", MsgBoxStyle.Exclamation) : Return
-
-
-            If bPrice < 0 OrElse sPrice < 0 Then
-                MsgBox("Prices cannot be negative.", MsgBoxStyle.Exclamation, "Invalid Entry") : Return
-            End If
-            If sPrice <= bPrice Then
-                Dim warn = MsgBox("The Selling Price is lower than or equal to the Buying Price. This will result in a loss. Proceed anyway?", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Profit Margin Warning")
-                If warn = MsgBoxResult.No Then Return
-            End If
+            If Not isSellingPriceValid() Then Return
         ElseIf choice = 2 Then
             If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all supplier details.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 3 Then
@@ -338,22 +440,13 @@ Public Class MainPanel
             If Not Integer.TryParse(txtField5.Text.Trim(), tSet) Then MsgBox("Total in set must be a whole number.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 7 Then
             If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all branch details.", MsgBoxStyle.Exclamation) : Return
-
         End If
+
         If choice = 8 Then
-            If currentCustID = 0 Then MsgBox("Please select an order first.") : Return
-            If MsgBox("Mark as Delivered?", MsgBoxStyle.YesNo + MsgBoxStyle.Question) = MsgBoxResult.Yes Then
-                Try
-                    readquery("UPDATE purchases SET status = 'Delivered' " &
-                      "WHERE customer_id = " & currentCustID & " AND product_id = " & currentProdID)
-                    MsgBox("Order fulfilled!")
-                    LoadGridData() : btnClear.PerformClick()
-                Catch ex As Exception
-                    MsgBox("Error: " & ex.Message)
-                End Try
-            End If
+            processOrderDelivery()
             Return
         End If
+
         Dim str As String = ""
         Dim seriesSQL As String = "NULL"
         If choice = 1 AndAlso cboSeries.Text.Trim() <> "" AndAlso cboSeries.Text <> "None" Then
@@ -363,72 +456,24 @@ Public Class MainPanel
         Try
             If currentID = 0 Then
 
-                Dim checkQuery As String = ""
-                If choice = 1 Then checkQuery = "SELECT product_id FROM product WHERE item_name = '" & txtField1.Text.Trim() & "' AND color = '" & txtField5.Text.Trim() & "' AND size = '" & txtField6.Text.Trim() & "'"
-                If choice = 2 Then checkQuery = "SELECT supplier_id FROM supplier WHERE company_name = '" & txtField1.Text.Trim() & "'"
-                If choice = 3 Then checkQuery = "SELECT customer_id FROM customer WHERE customer_name = '" & txtField1.Text.Trim() & "'"
-                If choice = 4 Then checkQuery = "SELECT employee_id FROM employee WHERE employee_name = '" & txtField1.Text.Trim() & "'"
-                If choice = 5 Then checkQuery = "SELECT courier_id FROM courier WHERE company_name = '" & txtField1.Text.Trim() & "'"
-                If choice = 6 Then checkQuery = "SELECT series_id FROM series WHERE series_name = '" & txtField1.Text.Trim() & "'"
-
-                readquery(checkQuery)
+                entityIsExisting()
 
                 If cmdread.HasRows Then
                     If choice = 1 Then
-                        Dim ans = MsgBox("This product already exists. Do you want to add the stock count (" & txtField7.Text.Trim() & ") to the existing inventory instead of creating a duplicate?", MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Duplicate Found")
-
-                        If ans = MsgBoxResult.Yes Then
-                            Dim stockToAdd As Integer = Integer.Parse(txtField7.Text.Trim())
-                            readquery("UPDATE product SET stock_count = COALESCE(stock_count, 0) + " & stockToAdd & " WHERE item_name = '" & txtField1.Text.Trim() & "'")
-                            MsgBox("Stock count successfully updated for the existing product!", MsgBoxStyle.Information)
-                            LoadGridData()
-                            btnClear.PerformClick()
-                        End If
-                        Return
+                        If handleDuplicateProduct() Then Return
                     Else
                         MsgBox("This record already exists. Please alter the name to create a unique record.", MsgBoxStyle.Exclamation)
                         Return
                     End If
                 End If
 
-                If choice = 1 Then
-                    str = "INSERT INTO product (item_name, buying_price, selling_price, status, color, size, stock_count, series_id) " &
-                          "VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', " &
-                          "'" & cbBox1.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSQL & ")"
-                ElseIf choice = 2 Then
-                    str = "INSERT INTO supplier (company_name, contact_person, country_origin) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
-                ElseIf choice = 3 Then
-                    str = "INSERT INTO customer (customer_name, address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "')"
-                ElseIf choice = 4 Then
-                    str = "INSERT INTO employee (employee_name, role, email_address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
-                ElseIf choice = 5 Then
-                    str = "INSERT INTO courier (company_name, address, contact_number) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
-                ElseIf choice = 6 Then
-                    str = "INSERT INTO series (series_name, manufacturer, release_year, total_in_set) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & txtField5.Text.Trim() & "')"
-                ElseIf choice = 7 Then
-                    str = "INSERT INTO branch (branch_name, address, operating_hours) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
-                End If
-
+                'Insert
+                str = generateInsertQuery(seriesSQL)
                 readquery(str)
                 MsgBox("New Record Successfully Added!", MsgBoxStyle.Information)
 
             Else
-                If choice = 1 Then
-                    str = "UPDATE product SET item_name='" & txtField1.Text.Trim() & "', buying_price='" & txtField2.Text.Trim() & "', selling_price='" & txtField3.Text.Trim() & "', status='" & cbBox1.Text.Trim() & "', color='" & txtField5.Text.Trim() & "', size='" & txtField6.Text.Trim() & "', stock_count='" & txtField7.Text.Trim() & "', series_id=" & seriesSQL & " WHERE product_id=" & currentID
-                ElseIf choice = 2 Then
-                    str = "UPDATE supplier SET company_name='" & txtField1.Text.Trim() & "', contact_person='" & txtField2.Text.Trim() & "', country_origin='" & txtField3.Text.Trim() & "' WHERE supplier_id=" & currentID
-                ElseIf choice = 3 Then
-                    str = "UPDATE customer SET customer_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "' WHERE customer_id=" & currentID
-                ElseIf choice = 4 Then
-                    str = "UPDATE employee SET employee_name='" & txtField1.Text.Trim() & "', role='" & txtField2.Text.Trim() & "', email_address='" & txtField3.Text.Trim() & "' WHERE employee_id=" & currentID
-                ElseIf choice = 5 Then
-                    str = "UPDATE courier SET company_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', contact_number='" & txtField3.Text.Trim() & "' WHERE courier_id=" & currentID
-                ElseIf choice = 6 Then
-                    str = "UPDATE series SET series_name='" & txtField1.Text.Trim() & "', manufacturer='" & txtField2.Text.Trim() & "', release_year='" & txtField3.Text.Trim() & "', total_in_set='" & txtField5.Text.Trim() & "' WHERE series_id=" & currentID
-                ElseIf choice = 7 Then
-                    str = "UPDATE branch SET branch_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', operating_hours='" & txtField3.Text.Trim() & "' WHERE branch_id=" & currentID
-                End If
-
+                str = generateUpdateQuery(seriesSQL)
                 readquery(str)
                 MsgBox("Record Successfully Updated!", MsgBoxStyle.Information)
             End If
@@ -440,13 +485,32 @@ Public Class MainPanel
             MsgBox("Error saving record: " & ex.Message, MsgBoxStyle.Critical)
         End Try
     End Sub
-
+    Private Function generateInsertQuery(seriesSql As String) As String
+        If choice = 1 Then Return "INSERT INTO product (item_name, buying_price, selling_price, status, color, size, stock_count, series_id) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & cbBox1.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSql & ")"
+        If choice = 2 Then Return "INSERT INTO supplier (company_name, contact_person, country_origin) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
+        If choice = 3 Then Return "INSERT INTO customer (customer_name, address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "')"
+        If choice = 4 Then Return "INSERT INTO employee (employee_name, role, email_address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
+        If choice = 5 Then Return "INSERT INTO courier (company_name, address, contact_number) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
+        If choice = 6 Then Return "INSERT INTO series (series_name, manufacturer, release_year, total_in_set) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & txtField5.Text.Trim() & "')"
+        If choice = 7 Then Return "INSERT INTO branch (branch_name, address, operating_hours) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
+        Return ""
+    End Function
+    Private Function generateUpdateQuery(seriesSql As String) As String
+        If choice = 1 Then Return "UPDATE product SET item_name='" & txtField1.Text.Trim() & "', buying_price='" & txtField2.Text.Trim() & "', selling_price='" & txtField3.Text.Trim() & "', status='" & cbBox1.Text.Trim() & "', color='" & txtField5.Text.Trim() & "', size='" & txtField6.Text.Trim() & "', stock_count='" & txtField7.Text.Trim() & "', series_id=" & seriesSql & " WHERE product_id=" & currentID
+        If choice = 2 Then Return "UPDATE supplier SET company_name='" & txtField1.Text.Trim() & "', contact_person='" & txtField2.Text.Trim() & "', country_origin='" & txtField3.Text.Trim() & "' WHERE supplier_id=" & currentID
+        If choice = 3 Then Return "UPDATE customer SET customer_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "' WHERE customer_id=" & currentID
+        If choice = 4 Then Return "UPDATE employee SET employee_name='" & txtField1.Text.Trim() & "', role='" & txtField2.Text.Trim() & "', email_address='" & txtField3.Text.Trim() & "' WHERE employee_id=" & currentID
+        If choice = 5 Then Return "UPDATE courier SET company_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', contact_number='" & txtField3.Text.Trim() & "' WHERE courier_id=" & currentID
+        If choice = 6 Then Return "UPDATE series SET series_name='" & txtField1.Text.Trim() & "', manufacturer='" & txtField2.Text.Trim() & "', release_year='" & txtField3.Text.Trim() & "', total_in_set='" & txtField5.Text.Trim() & "' WHERE series_id=" & currentID
+        If choice = 7 Then Return "UPDATE branch SET branch_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', operating_hours='" & txtField3.Text.Trim() & "' WHERE branch_id=" & currentID
+        Return ""
+    End Function
     Private Sub btnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
         txtField1.Clear() : txtField2.Clear() : txtField3.Clear()
         txtField5.Clear() : txtField6.Clear() : txtField7.Clear()
         txtField1.ReadOnly = False : txtField2.ReadOnly = False : txtField3.ReadOnly = False
         currentID = 0 : currentTimestamp = ""
-        currentCustID = 0 : currentProdID = 0   ' ← ADD
+        currentCustID = 0 : currentProdID = 0 : currentOrderDate = ""
         btnDelete.Enabled = False
         btnSave.Text = If(choice = 8, "✔ Mark Delivered", "Save Record")
         If choice = 8 Then btnSave.Enabled = False
@@ -455,16 +519,39 @@ Public Class MainPanel
     Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
         If choice = 8 Then
             If currentCustID = 0 Then Return
-            If MsgBox("Cancel order and return " & selQty & " unit(s) to stock?", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation) = MsgBoxResult.Yes Then
+
+            Dim action As String = ""
+            Dim newStatus As String = ""
+            If btnDelete.Text = "Cancel Order" Then
+                action = "Cancel this pending order"
+                newStatus = "Cancelled"
+            ElseIf btnDelete.Text = "Process Return" Then
+                action = "Process a RETURN for this delivered order"
+                newStatus = "Returned"
+            Else
+                Return
+            End If
+
+            If MsgBox(action & " and return " & selQty & " unit(s) to the Main Warehouse?", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Confirm Action") = MsgBoxResult.Yes Then
                 Try
-                    readquery("UPDATE purchases SET status = 'Cancelled' " &
-                      "WHERE customer_id = " & currentCustID & " AND product_id = " & currentProdID)
+                    readquery("START TRANSACTION")
+
+
+                    readquery("UPDATE purchases SET status = '" & newStatus & "' " &
+                              "WHERE customer_id = " & currentCustID & " AND product_id = " & currentProdID &
+                              " AND reservation_date = '" & currentOrderDate & "'")
+
                     readquery("UPDATE product SET stock_count = stock_count + " & selQty &
-                      " WHERE item_name = '" & txtField2.Text.Trim().Replace("'", "''") & "'")
-                    MsgBox("Cancelled and stock restored.")
-                    LoadGridData() : btnClear.PerformClick()
+                              " WHERE item_name = '" & txtField2.Text.Trim().Replace("'", "''") & "'")
+
+                    readquery("COMMIT")
+
+                    MsgBox("Success! Order marked as " & newStatus & " and stock restored.", MsgBoxStyle.Information)
+                    LoadGridData()
+                    btnClear.PerformClick()
                 Catch ex As Exception
-                    MsgBox("Error: " & ex.Message)
+                    readquery("ROLLBACK")
+                    MsgBox("Error updating order: " & ex.Message, MsgBoxStyle.Critical)
                 End Try
             End If
             Return
@@ -474,14 +561,7 @@ Public Class MainPanel
         Dim ask = MsgBox("Are you sure you want to permanently delete " & txtField1.Text & "?", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Confirm Delete")
 
         If ask = MsgBoxResult.Yes Then
-            Dim str As String = ""
-            If choice = 1 Then str = "DELETE FROM product WHERE product_id = " & currentID
-            If choice = 2 Then str = "DELETE FROM supplier WHERE supplier_id = " & currentID
-            If choice = 3 Then str = "DELETE FROM customer WHERE customer_id = " & currentID
-            If choice = 4 Then str = "DELETE FROM employee WHERE employee_id = " & currentID
-            If choice = 5 Then str = "DELETE FROM courier WHERE courier_id = " & currentID
-            If choice = 6 Then str = "DELETE FROM series WHERE series_id = " & currentID
-            If choice = 7 Then str = "DELETE FROM branch WHERE branch_id = " & currentID
+            Dim str As String = deleteEntity()
 
             Try
                 readquery(str)
@@ -494,6 +574,17 @@ Public Class MainPanel
         End If
     End Sub
 
+    Private Function deleteEntity()
+        Dim str As String = ""
+        If choice = 1 Then str = "DELETE FROM product WHERE product_id = " & currentID
+        If choice = 2 Then str = "DELETE FROM supplier WHERE supplier_id = " & currentID
+        If choice = 3 Then str = "DELETE FROM customer WHERE customer_id = " & currentID
+        If choice = 4 Then str = "DELETE FROM employee WHERE employee_id = " & currentID
+        If choice = 5 Then str = "DELETE FROM courier WHERE courier_id = " & currentID
+        If choice = 6 Then str = "DELETE FROM series WHERE series_id = " & currentID
+        If choice = 7 Then str = "DELETE FROM branch WHERE branch_id = " & currentID
+        Return str
+    End Function
     Private Sub btnRunReport_Click(sender As Object, e As EventArgs) Handles btnRunReport.Click
         If cboReport.Text = "" Then
             MsgBox("Please select a report to run.", MsgBoxStyle.Exclamation)
@@ -510,7 +601,10 @@ Public Class MainPanel
             Dim dt As New DataTable()
             dt = getDataTable(sql)
             dgvReport.DataSource = dt
-            dgvReport.AutoResizeColumns()
+
+            dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            dgvReport.ClearSelection()
+
             lblField.Text = "REPORT: " & cboReport.Text
         Catch ex As Exception
             MsgBox("Report error: " & ex.Message, MsgBoxStyle.Critical)
@@ -532,8 +626,21 @@ Public Class MainPanel
 
     Private Function GetReportQuery(reportIndex As Integer, searchVal As String) As String
         Dim sql As String = ""
-        Dim searchFilter As String = ""
+
         Select Case reportIndex
+            Case 0
+                sql = "SELECT 'Total Registered Products' AS 'Business Metric', COUNT(product_id) AS 'Current Value' FROM product " &
+                      "UNION ALL " &
+                      "SELECT 'Total Items in Main Warehouse', COALESCE(SUM(stock_count), 0) FROM product " &
+                      "UNION ALL " &
+                      "SELECT 'Total Items in Branches', COALESCE(SUM(quantity), 0) FROM stores " &
+                      "UNION ALL " &
+                      "SELECT 'Pending Orders (Needs Delivery)', COUNT(*) FROM purchases WHERE status = 'Pending' " &
+                      "UNION ALL " &
+                      "SELECT 'Total Lifetime Sales Revenue (PHP)', COALESCE(SUM(p.selling_price * pu.quantity), 0) FROM purchases pu INNER JOIN product p ON pu.product_id = p.product_id WHERE pu.status = 'Delivered' " &
+                      "UNION ALL " &
+                      "SELECT 'Total Branch Locations', COUNT(branch_id) FROM branch"
+
             Case 1
                 sql = "SELECT b.branch_name AS 'Branch', p.item_name AS 'Product', p.stock_count AS 'Stock', " &
                       "p.selling_price AS 'Price (PHP)', s.last_restocked_date AS 'Last Restocked' " &
@@ -546,16 +653,18 @@ Public Class MainPanel
 
             Case 2
                 sql = "SELECT c.customer_name AS 'Customer', p.item_name AS 'Product Purchased', " &
-                      "pu.reservation_date AS 'Order Date', pu.status AS 'Status', " &
+                      "pu.quantity AS 'Qty', pu.reservation_date AS 'Order Date', pu.status AS 'Status', " &
                       "p.selling_price AS 'Sell Price', p.buying_price AS 'Buy Price', " &
-                      "(p.selling_price - p.buying_price) AS 'Profit Margin (PHP)', " &
+                      "((p.selling_price - p.buying_price) * pu.quantity) AS 'Total Profit (PHP)', " &
                       "COALESCE(co.company_name, 'Walk-in / Pickup') AS 'Courier Used' " &
                       "FROM purchases pu INNER JOIN customer c ON pu.customer_id = c.customer_id " &
                       "INNER JOIN product p ON pu.product_id = p.product_id " &
                       "LEFT JOIN delivers_to dt ON dt.customer_id = c.customer_id " &
-                      "LEFT JOIN courier co ON dt.courier_id = co.courier_id "
+                      "LEFT JOIN courier co ON dt.courier_id = co.courier_id " &
+                      "WHERE pu.status != 'Cancelled' "
+
                 If searchVal <> "" Then
-                    sql &= "WHERE c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%' OR pu.status LIKE '%" & searchVal & "%' "
+                    sql &= "AND (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%' OR pu.status LIKE '%" & searchVal & "%') "
                 End If
                 sql &= "ORDER BY pu.reservation_date DESC"
 
@@ -575,7 +684,7 @@ Public Class MainPanel
                 sql = "SELECT p.item_name AS 'Product', p.stock_count AS 'Remaining Stock', " &
                       "p.selling_price AS 'Sell Price', sup.company_name AS 'Last Supplier', " &
                       "sup.country_origin AS 'Supplier Origin', pr.supply_date AS 'Last Supply Date' " &
-                      "FROM product p LEFT JOIN provides pr ON p.product_id = pr.product_id " &
+                      "FROM product p LEFT JOIN provides pr ON p.product_id = p.product_id " &
                       "AND pr.supply_date = (SELECT MAX(supply_date) FROM provides WHERE product_id = p.product_id) " &
                       "LEFT JOIN supplier sup ON pr.supplier_id = sup.supplier_id " &
                       "WHERE p.stock_count <= 5 "
@@ -588,15 +697,15 @@ Public Class MainPanel
                 sql = "SELECT p.item_name AS 'Product', sup.company_name AS 'Supplied By', " &
                       "b.branch_name AS 'Stored At', c.customer_name AS 'Sold To', " &
                       "pu.status AS 'Order Status', co.company_name AS 'Shipped By', " &
-                      "sh.shipping_date AS 'Ship Date' " &
+                      "dt.delivery_date AS 'Ship Date' " &
                       "FROM product p LEFT JOIN provides pr ON p.product_id = pr.product_id " &
                       "LEFT JOIN supplier sup ON pr.supplier_id = sup.supplier_id " &
                       "LEFT JOIN stores st ON p.product_id = st.product_id " &
                       "LEFT JOIN branch b ON st.branch_id = b.branch_id " &
                       "LEFT JOIN purchases pu ON p.product_id = pu.product_id " &
                       "LEFT JOIN customer c ON pu.customer_id = c.customer_id " &
-                      "LEFT JOIN ships sh ON p.product_id = sh.product_id " &
-                      "LEFT JOIN courier co ON sh.courier_id = co.courier_id "
+                      "LEFT JOIN delivers_to dt ON c.customer_id = dt.customer_id " &
+                      "LEFT JOIN courier co ON dt.courier_id = co.courier_id "
                 If searchVal <> "" Then
                     sql &= "WHERE p.item_name LIKE '%" & searchVal & "%' OR sup.company_name LIKE '%" & searchVal & "%' OR b.branch_name LIKE '%" & searchVal & "%' OR c.customer_name LIKE '%" & searchVal & "%' "
                 End If
@@ -611,7 +720,8 @@ Public Class MainPanel
 
     Private Sub txtField2_TextChanged(sender As Object, e As EventArgs) Handles txtField2.TextChanged
     End Sub
-
     Private Sub dgvReport_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvReport.CellContentClick
+    End Sub
+    Private Sub txtField3_TextChanged(sender As Object, e As EventArgs) Handles txtField3.TextChanged
     End Sub
 End Class

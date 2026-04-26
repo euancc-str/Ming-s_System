@@ -90,7 +90,8 @@
     End Sub
 
     Private Sub ViewReportsToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewReportsToolStripMenuItem.Click
-        operation = 5 ' REPORT MODE
+        CloseActiveWindows()
+        operation = 5
         MainPanel.MdiParent = Me
         MainPanel.Show()
     End Sub

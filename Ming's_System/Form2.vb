@@ -155,32 +155,14 @@ Public Class MainPanel
             btnSave.Text = "✔ Mark Delivered"
             btnClear.Visible = True
         ElseIf choice = 9 Then
-            lblField.Text = "BULK BRANCH RETRIEVAL"
-            cboReport.Items.Clear()
+            cboBranchSweep.Items.Clear()
             readquery("SELECT branch_name FROM branch ORDER BY branch_name")
-            While cmdread.Read()
-                cboReport.Items.Add(cmdread("branch_name").ToString())
+            While cmdread.HasRows AndAlso cmdread.Read()
+                cboBranchSweep.Items.Add(cmdread("branch_name").ToString())
             End While
-            cboReport.Text = "Select Branch to Empty..."
+            cboBranchSweep.Text = "Select Branch to Empty..."
 
-
-            setcontrolsvisible(False, lblField1, txtField1, lblField2, txtField2, lblField3, txtField3,
-                               lblField4, cbBox1, lblField5, txtField5, lblField6, txtField6,
-                               lblField7, txtField7, lblSeries, cboSeries)
-
-            lblField2.Visible = False
-            lblField3.Visible = False
-
-            cboReport.Visible = True
-            cboReport.Text = "Select Branch to Empty..."
-
-
-            btnClear.Text = "Run Bulk Retrieval"
-            btnClear.Visible = True
-            btnSave.Visible = False
-            btnDelete.Visible = False
-
-            dgvReport.Visible = True
+            dgvBranchInventory.DataSource = Nothing
         End If
         LoadGridData()
     End Sub
@@ -257,15 +239,15 @@ Public Class MainPanel
 
 
 
-    Private Sub txtSearch_TextChanged(sender As Object, e As EventArgs)
+    Private Sub txtSearch_TextChanged(sender As Object, e As EventArgs) Handles txtSearch.TextChanged
         If operation = 5 Then
-            If cboReport.Text <> "" Then btnRunReport.PerformClick
+            If cboReport.Text <> "" Then btnRunReport.PerformClick()
         Else
             LoadGridData()
         End If
     End Sub
 
-    Private Sub dgvData_CellClick(sender As Object, e As DataGridViewCellEventArgs)
+    Private Sub dgvData_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvData.CellClick
         If e.RowIndex >= 0 Then
             Dim row = dgvData.Rows(e.RowIndex)
             If choice = 8 Then
@@ -448,7 +430,7 @@ Public Class MainPanel
         End If
         Return False
     End Function
-    Private Sub btnSave_Click(sender As Object, e As EventArgs)
+    Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         If txtField1.Text.Trim = "" Then
             MsgBox("Please enter a valid name in the first field.", MsgBoxStyle.Exclamation)
             Return
@@ -510,7 +492,7 @@ Public Class MainPanel
             End If
 
             LoadGridData()
-            btnClear.PerformClick
+            btnClear.PerformClick()
 
 
         Catch ex As Exception
@@ -549,9 +531,9 @@ Public Class MainPanel
         If choice = 7 Then Return "UPDATE branch SET branch_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', operating_hours='" & txtField3.Text.Trim() & "' WHERE branch_id=" & currentID
         Return ""
     End Function
-    Private Sub btnClear_Click(sender As Object, e As EventArgs)
-        txtField1.Clear : txtField2.Clear : txtField3.Clear
-        txtField5.Clear : txtField6.Clear : txtField7.Clear
+    Private Sub btnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
+        txtField1.Clear() : txtField2.Clear() : txtField3.Clear()
+        txtField5.Clear() : txtField6.Clear() : txtField7.Clear()
         txtField1.ReadOnly = False : txtField2.ReadOnly = False : txtField3.ReadOnly = False
         currentID = 0 : currentTimestamp = ""
         currentCustID = 0 : currentProdID = 0 : currentOrderDate = ""
@@ -578,7 +560,7 @@ Public Class MainPanel
         End If
     End Sub
 
-    Private Sub btnDelete_Click(sender As Object, e As EventArgs)
+    Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
         If choice = 8 Then
             If currentCustID = 0 Then Return
 
@@ -610,7 +592,7 @@ Public Class MainPanel
 
                     MsgBox("Success! Order marked as " & newStatus & " and stock restored.", MsgBoxStyle.Information)
                     LoadGridData()
-                    btnClear.PerformClick
+                    btnClear.PerformClick()
                 Catch ex As Exception
                     readquery("ROLLBACK")
                     MsgBox("Error updating order: " & ex.Message, MsgBoxStyle.Critical)
@@ -629,7 +611,7 @@ Public Class MainPanel
                 readquery(str)
                 MsgBox("Record deleted successfully!")
                 LoadGridData()
-                btnClear.PerformClick
+                btnClear.PerformClick()
             Catch ex As Exception
                 MsgBox("Error deleting: " & ex.Message, MsgBoxStyle.Critical)
             End Try
@@ -807,6 +789,230 @@ Public Class MainPanel
     End Sub
 
     Private Sub dgvData_CellContentClick(sender As Object, e As DataGridViewCellEventArgs)
+
+    End Sub
+    Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
+
+        Select Case TabControl1.SelectedIndex
+            Case 0
+
+            Case 1
+
+            Case 2
+
+                LoadCustomer360Data("")
+            Case 3
+
+                LoadSuppliers("")
+
+            Case 4
+
+                LoadAdminData("")
+        End Select
+
+
+        If btnClear IsNot Nothing Then btnClear.PerformClick()
+
+
+        Form2_Load(Nothing, Nothing)
+    End Sub
+
+    Private Sub LoadCustomer360Data(searchTerm As String)
+        Dim searchVal As String = searchTerm.Trim().Replace("'", "''")
+
+        Try
+
+            Dim sqlCust = "SELECT customer_id AS ID, customer_name AS Name, address AS Address " &
+                          "FROM customer " &
+                          "WHERE customer_name LIKE '%" & searchVal & "%'"
+            dgvCust.DataSource = getDataTable(sqlCust)
+            dgvCust.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+
+            Dim sqlDelivers = "SELECT co.company_name AS Courier, d.delivery_date AS 'Est. Delivery', d.shipping_fee AS Fee " &
+                              "FROM delivers_to d " &
+                              "INNER JOIN customer c ON d.customer_id = c.customer_id " &
+                              "INNER JOIN courier co ON d.courier_id = co.courier_id " &
+                              "WHERE c.customer_name LIKE '%" & searchVal & "%'"
+            dgvDelivers.DataSource = getDataTable(sqlDelivers)
+            dgvDelivers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+
+            Dim sqlPurchases = "SELECT p.item_name AS Product, pu.quantity AS Qty, " &
+                               "pu.status AS Status, pu.reservation_date AS 'Order Date' " &
+                               "FROM purchases pu " &
+                               "INNER JOIN customer c ON pu.customer_id = c.customer_id " &
+                               "INNER JOIN product p ON pu.product_id = p.product_id " &
+                               "WHERE c.customer_name LIKE '%" & searchVal & "%' " &
+                               "ORDER BY pu.reservation_date DESC"
+            dgvPurchases.DataSource = getDataTable(sqlPurchases)
+            dgvPurchases.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+            ' Clear default selections so it looks clean
+            dgvCust.ClearSelection()
+            dgvDelivers.ClearSelection()
+            dgvPurchases.ClearSelection()
+
+        Catch ex As Exception
+            MsgBox("Error loading Customer 360 data: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+
+    Private Sub cboBranchSweep_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboBranchSweep.SelectedIndexChanged
+
+        If cboBranchSweep.Text = "Select Branch to Empty..." OrElse cboBranchSweep.Text = "" Then
+            dgvBranchInventory.DataSource = Nothing
+            Return
+        End If
+
+        Dim branchName As String = cboBranchSweep.Text.Trim().Replace("'", "''")
+
+
+        Dim sql As String = "SELECT p.product_id AS ID, p.item_name AS Name, s.quantity AS 'Branch Qty', " &
+                            "p.color AS Color, p.size AS Size " &
+                            "FROM stores s " &
+                            "INNER JOIN product p ON s.product_id = p.product_id " &
+                            "INNER JOIN branch b ON s.branch_id = b.branch_id " &
+                            "WHERE b.branch_name = '" & branchName & "'"
+
+        Try
+            dgvBranchInventory.DataSource = getDataTable(sql)
+            dgvBranchInventory.AutoResizeColumns()
+            dgvBranchInventory.ClearSelection()
+        Catch ex As Exception
+            MsgBox("Error loading branch inventory: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+    Private Sub btnRunSweep_Click(sender As Object, e As EventArgs) Handles btnRunSweep.Click
+        If cboBranchSweep.Text = "Select Branch to Empty..." OrElse cboBranchSweep.Text = "" Then
+            MsgBox("Please select a branch first.", MsgBoxStyle.Exclamation)
+            Return
+        End If
+
+        Dim rowCount = dgvBranchInventory.Rows.Cast(Of DataGridViewRow).Where(Function(r) Not r.IsNewRow).Count()
+        If rowCount = 0 Then
+            MsgBox("This branch is already empty! There is nothing to retrieve.", MsgBoxStyle.Information)
+            Return
+        End If
+
+        Dim ans = MsgBox($"Are you sure you want to retrieve ALL stock from {cboBranchSweep.Text} back to the Main Warehouse?",
+                         MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Confirm Bulk Action")
+
+        If ans = MsgBoxResult.Yes Then
+
+            Dim res = service.ProcessBulkRetrieval(cboBranchSweep.Text.Trim())
+
+            If res.Success Then
+                MsgBox(res.Message, MsgBoxStyle.Information)
+
+
+                dgvBranchInventory.DataSource = Nothing
+                cboBranchSweep.SelectedIndex = -1
+                cboBranchSweep.Text = "Select Branch to Empty..."
+            Else
+                MsgBox(res.Message, MsgBoxStyle.Critical)
+            End If
+        End If
+    End Sub
+    Private Sub txtGlobalSearch_TextChanged(sender As Object, e As EventArgs) Handles txtGlobalSearch.TextChanged
+        If TabControl1.SelectedIndex = 2 Then
+            LoadCustomer360Data(txtGlobalSearch.Text)
+        End If
+    End Sub
+    Private Sub LoadSuppliers(searchTerm As String)
+        Dim searchVal As String = searchTerm.Trim().Replace("'", "''")
+
+        Try
+            Dim sql = "SELECT supplier_id AS ID, company_name AS 'Company Name', " &
+                      "contact_person AS 'Contact Person', country_origin AS 'Origin' " &
+                      "FROM supplier " &
+                      "WHERE company_name LIKE '%" & searchVal & "%' "
+
+            dgvSuppliers.DataSource = getDataTable(sql)
+            dgvSuppliers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+            dgvProvidedProducts.DataSource = Nothing
+
+        Catch ex As Exception
+            MsgBox("Error loading suppliers: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+    Private Sub txtSearchSupplier_TextChanged(sender As Object, e As EventArgs) Handles txtSearchSupplier.TextChanged
+        If TabControl1.SelectedIndex = 3 Then
+            LoadSuppliers(txtSearchSupplier.Text)
+        End If
+    End Sub
+    Private Sub dgvSuppliers_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSuppliers.CellClick
+
+        If e.RowIndex >= 0 Then
+            Try
+                Dim row = dgvSuppliers.Rows(e.RowIndex)
+                Dim selectedSupplierID = row.Cells("ID").Value.ToString
+
+
+                Dim sqlProducts = "SELECT p.item_name AS 'Product Supplied', " &
+                                  "pr.supply_date AS 'Date Supplied', " &
+                                  "pr.supply_price AS 'Wholesale Cost', " &
+                                  "pr.quantity_supplied AS 'Qty' " &
+                                  "FROM provides pr " &
+                                  "INNER JOIN product p ON pr.product_id = p.product_id " &
+                                  "WHERE pr.supplier_id = " & selectedSupplierID & " " &
+                                  "ORDER BY pr.supply_date DESC"
+
+                dgvProvidedProducts.DataSource = getDataTable(sqlProducts)
+                dgvProvidedProducts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                dgvProvidedProducts.ClearSelection()
+
+            Catch ex As Exception
+                MsgBox("Error loading supplied products: " & ex.Message, MsgBoxStyle.Critical)
+            End Try
+        End If
+    End Sub
+    Private Sub LoadAdminData(searchTerm As String)
+        Dim searchVal As String = searchTerm.Replace("'", "''").Trim()
+
+        Try
+
+            Dim sqlBranch = "SELECT branch_id AS ID, branch_name AS 'Branch Name', " &
+                            "address AS 'Address' " &
+                            "FROM branch " &
+                            "WHERE branch_name LIKE '%" & searchVal & "%'"
+            dgvBranches.DataSource = getDataTable(sqlBranch)
+            dgvBranches.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+
+            Dim sqlEmp = "SELECT employee_id AS ID, employee_name AS 'Employee Name', " &
+                         "role AS 'Role', email_address AS 'Email' " &
+                         "FROM employee " &
+                         "WHERE employee_name LIKE '%" & searchVal & "%'"
+            dgvEmployees.DataSource = getDataTable(sqlEmp)
+            dgvEmployees.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            Dim sqlJoined = "SELECT e.employee_name AS 'Staff Member', e.role AS 'Role', " &
+                            "b.branch_name AS 'Location', w.scheduled_date AS 'Date', " &
+                            "w.start_time AS 'Start Shift', w.end_time AS 'End Shift' " &
+                            "FROM works_in w " &
+                            "INNER JOIN employee e ON w.employee_id = e.employee_id " &
+                            "INNER JOIN branch b ON w.branch_id = b.branch_id " &
+                            "WHERE e.employee_name LIKE '%" & searchVal & "%' " &
+                            "OR b.branch_name LIKE '%" & searchVal & "%' " &
+                            "ORDER BY w.scheduled_date DESC, b.branch_name"
+
+            dgvStaffAssignments.DataSource = getDataTable(sqlJoined)
+            dgvStaffAssignments.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+            dgvBranches.ClearSelection()
+            dgvEmployees.ClearSelection()
+            dgvStaffAssignments.ClearSelection()
+
+        Catch ex As Exception
+            MsgBox("Error loading Admin tables: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+    Private Sub txtAdminSearch_TextChanged(sender As Object, e As EventArgs) Handles txtAdminSearch.TextChanged
+
+        If TabControl1.SelectedIndex = 4 Then
+            LoadAdminData(txtAdminSearch.Text)
+        End If
+    End Sub
+    Private Sub dgvBranches_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvBranches.CellContentClick
 
     End Sub
 End Class

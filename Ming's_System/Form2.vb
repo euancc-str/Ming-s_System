@@ -155,7 +155,23 @@ Public Class MainPanel
         End If
         LoadGridData()
     End Sub
+    Private Sub LoadGridData()
+        Dim sql As String = ""
+        Dim searchVal As String = ""
 
+        If txtSearch IsNot Nothing Then
+            searchVal = txtSearch.Text.Trim().Replace("'", "''")
+        End If
+
+        Try
+
+            sql = generateSearchQuery(searchVal)
+            dgvData.DataSource = getDataTable(sql)
+            dgvData.AutoResizeColumns()
+        Catch ex As Exception
+            MsgBox("Error loading grid: " & ex.Message)
+        End Try
+    End Sub
     Private Function generateSearchQuery(searchVal As String) As String
         Dim sql As String = ""
         If choice = 1 Then
@@ -196,23 +212,7 @@ Public Class MainPanel
         Return Sql
     End Function
 
-    Private Sub LoadGridData()
-        Dim sql As String = ""
-        Dim searchVal As String = ""
 
-        If txtSearch IsNot Nothing Then
-            searchVal = txtSearch.Text.Trim().Replace("'", "''")
-        End If
-
-        Try
-
-            sql = generateSearchQuery(searchVal)
-            dgvData.DataSource = getDataTable(sql)
-            dgvData.AutoResizeColumns()
-        Catch ex As Exception
-            MsgBox("Error loading grid: " & ex.Message)
-        End Try
-    End Sub
 
     Private Sub txtSearch_TextChanged(sender As Object, e As EventArgs) Handles txtSearch.TextChanged
         If operation = 5 Then
@@ -391,18 +391,7 @@ Public Class MainPanel
         End Try
     End Sub
 
-    Private Sub entityIsExisting()
 
-        Dim checkQuery As String = ""
-        If choice = 1 Then checkQuery = "SELECT product_id FROM product WHERE item_name = '" & txtField1.Text.Trim() & "' AND color = '" & txtField5.Text.Trim() & "' AND size = '" & txtField6.Text.Trim() & "'"
-        If choice = 2 Then checkQuery = "SELECT supplier_id FROM supplier WHERE company_name = '" & txtField1.Text.Trim() & "'"
-        If choice = 3 Then checkQuery = "SELECT customer_id FROM customer WHERE customer_name = '" & txtField1.Text.Trim() & "'"
-        If choice = 4 Then checkQuery = "SELECT employee_id FROM employee WHERE employee_name = '" & txtField1.Text.Trim() & "'"
-        If choice = 5 Then checkQuery = "SELECT courier_id FROM courier WHERE company_name = '" & txtField1.Text.Trim() & "'"
-        If choice = 6 Then checkQuery = "SELECT series_id FROM series WHERE series_name = '" & txtField1.Text.Trim() & "'"
-
-        readquery(checkQuery)
-    End Sub
 
     Private Function handleDuplicateProduct() As Boolean
         Dim ans = MsgBox("This product already exists. Do you want to add the stock count (" & txtField7.Text.Trim() & ") to the existing inventory instead of creating a duplicate?", MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Duplicate Found")
@@ -484,6 +473,18 @@ Public Class MainPanel
         Catch ex As Exception
             MsgBox("Error saving record: " & ex.Message, MsgBoxStyle.Critical)
         End Try
+    End Sub
+    Private Sub entityIsExisting()
+
+        Dim checkQuery As String = ""
+        If choice = 1 Then checkQuery = "SELECT product_id FROM product WHERE item_name = '" & txtField1.Text.Trim() & "' AND color = '" & txtField5.Text.Trim() & "' AND size = '" & txtField6.Text.Trim() & "'"
+        If choice = 2 Then checkQuery = "SELECT supplier_id FROM supplier WHERE company_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 3 Then checkQuery = "SELECT customer_id FROM customer WHERE customer_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 4 Then checkQuery = "SELECT employee_id FROM employee WHERE employee_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 5 Then checkQuery = "SELECT courier_id FROM courier WHERE company_name = '" & txtField1.Text.Trim() & "'"
+        If choice = 6 Then checkQuery = "SELECT series_id FROM series WHERE series_name = '" & txtField1.Text.Trim() & "'"
+
+        readquery(checkQuery)
     End Sub
     Private Function generateInsertQuery(seriesSql As String) As String
         If choice = 1 Then Return "INSERT INTO product (item_name, buying_price, selling_price, status, color, size, stock_count, series_id) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & cbBox1.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSql & ")"

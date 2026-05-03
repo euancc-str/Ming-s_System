@@ -14,17 +14,10 @@ Public Class frmTransaction
     Private Const DELIVERY_TYPE_COURIER As String = "Courier Delivery"
     Private Const STATUS_PENDING As String = "Pending"
     Private Const STATUS_DELIVERED As String = "Delivered"
-    Private Const LOW_STOCK_THRESHOLD As Integer = 5
-    Private Const EMAIL_REGEX As String = "^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
-    ' ── CONTROLLER INSTANCE ────────────────────────────────────────
+    ' 1. INITIALIZE THE CONTROLLER AND THE SERVICE
     Private ctrl As New TransactionController()
-    ' ───────────────────────────────────────────────────────────────
-
-
-    ' ==============================================================
-    '  FORM LOAD
-    ' ==============================================================
+    Private service As New TransactionService(ctrl)
 
     Private Sub frmTransaction_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
@@ -42,37 +35,26 @@ Public Class frmTransaction
         End Try
     End Sub
 
-
-    ' ==============================================================
-    '  KEY-PRESS GUARDS  (unchanged)
-    ' ==============================================================
-
-    Private Sub DecimalOnly_KeyPress(sender As Object, e As KeyPressEventArgs) _
-        Handles txtNewBuyPrice.KeyPress, txtNewSellPrice.KeyPress,
-                txtShippingFee.KeyPress, txtDownPayment.KeyPress
-
+    ' ========================================================================
+    '  UI KEYPRESS VALIDATIONS (Keep these, they stop bad typing early)
+    ' ========================================================================
+    Private Sub DecimalOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtNewBuyPrice.KeyPress, txtNewSellPrice.KeyPress, txtShippingFee.KeyPress, txtDownPayment.KeyPress
         Dim isControl = Char.IsControl(e.KeyChar)
         Dim isDigit = Char.IsDigit(e.KeyChar)
         Dim isDot = (e.KeyChar = "."c)
         Dim dotAlreadyPresent = isDot AndAlso CType(sender, TextBox).Text.Contains(".")
-
         e.Handled = Not isControl AndAlso Not isDigit AndAlso Not isDot OrElse dotAlreadyPresent
     End Sub
 
-    Private Sub IntegerOnly_KeyPress(sender As Object, e As KeyPressEventArgs) _
-        Handles txtQuantity.KeyPress, txtNewStockCount.KeyPress
-
+    Private Sub IntegerOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtQuantity.KeyPress, txtNewStockCount.KeyPress
         e.Handled = Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar)
     End Sub
 
-
-    ' ==============================================================
-    '  UI CONFIGURATION  (unchanged except ConfigureSalesUI)
-    ' ==============================================================
-
+    ' ========================================================================
+    '  UI CONFIGURATION (Unchanged - Handles hiding/showing boxes)
+    ' ========================================================================
     Private Sub ConfigureTransactionUI()
         HideAllOptionalControls()
-
         Select Case tag1
             Case TX_RESTOCK : ConfigureRestockUI()
             Case TX_SALES : ConfigureSalesUI()
@@ -83,15 +65,7 @@ Public Class frmTransaction
     End Sub
 
     Private Sub HideAllOptionalControls()
-        SetVisible(False, lblStatus, cboStatus,
-                         lblShippingFee, txtShippingFee,
-                         lblShippingDate, dtpShippingDate,
-                         cboCourier, lblCourier,
-                         lblDownPayment, txtDownPayment,
-                         lblQuantity, txtQuantity,
-                         lblSalesLocation, cboSalesLocation,
-                         lblDelivery)
-
+        SetVisible(False, lblStatus, cboStatus, lblShippingFee, txtShippingFee, lblShippingDate, dtpShippingDate, cboCourier, lblCourier, lblDownPayment, txtDownPayment, lblQuantity, txtQuantity, lblSalesLocation, cboSalesLocation, lblDelivery)
         If lblStartTime IsNot Nothing Then lblStartTime.Visible = False
         If dtpStartTime IsNot Nothing Then dtpStartTime.Visible = False
         If cboDeliveryType IsNot Nothing Then cboDeliveryType.Visible = False
@@ -116,10 +90,7 @@ Public Class frmTransaction
         lblNewProductHeader.Text = "Select Product:"
         SetTargetLabels("CUSTOMER NAME", "ADDRESS", Nothing)
         chkNewTarget.Text = "Add New Customer"
-        SetVisible(True, lblDownPayment, txtDownPayment,
-                         lblQuantity, txtQuantity,
-                         lblStatus, cboStatus,
-                         lblSalesLocation, cboSalesLocation)
+        SetVisible(True, lblDownPayment, txtDownPayment, lblQuantity, txtQuantity, lblStatus, cboStatus, lblSalesLocation, cboSalesLocation)
 
         PopulateComboBox(cboStatus, STATUS_PENDING, STATUS_DELIVERED)
         cboStatus.SelectedIndex = 0
@@ -134,7 +105,6 @@ Public Class frmTransaction
         dtpReservationDate.Visible = True
         btnProcess.Text = "Process Sale"
 
-        ' ── CONTROLLER: load branch names instead of raw readquery ──
         cboSalesLocation.Items.Clear()
         cboSalesLocation.Items.Add(LOCATION_MAIN_WAREHOUSE)
         For Each b In ctrl.GetBranches()
@@ -200,11 +170,9 @@ Public Class frmTransaction
         chkNewProduct.Visible = False
     End Sub
 
-
-    ' ==============================================================
-    '  DROPDOWN LOADERS  — all routed through controller
-    ' ==============================================================
-
+    ' ========================================================================
+    '  DROPDOWN LOADING (Delegated to Controller)
+    ' ========================================================================
     Private Sub LoadTransactionDropdowns()
         cboTarget.Items.Clear()
         cboProduct.DataSource = Nothing
@@ -217,20 +185,16 @@ Public Class frmTransaction
                 Case TX_RESTOCK
                     LoadComboFromList(cboTarget, ctrl.GetSuppliers())
                     LoadProductDropdown()
-
                 Case TX_SALES
                     LoadComboFromList(cboTarget, ctrl.GetCustomers())
                     LoadProductDropdown()
                     LoadComboFromList(cboCourier, ctrl.GetCouriers())
-
                 Case TX_STORE_ASSIGN
                     LoadComboFromList(cboTarget, ctrl.GetBranches())
                     LoadProductDropdown()
-
                 Case TX_WORK_SCHEDULE
                     LoadComboFromList(cboTarget, ctrl.GetEmployees())
-                    LoadComboFromList(cboProduct, ctrl.GetBranches())   ' branches into cboProduct slot
-
+                    LoadComboFromList(cboProduct, ctrl.GetBranches())
                 Case TX_INTERNAL_TRANSFER
                     cboTarget.Items.Add(LOCATION_MAIN_WAREHOUSE)
                     cboSalesLocation.Items.Add(LOCATION_MAIN_WAREHOUSE)
@@ -245,14 +209,10 @@ Public Class frmTransaction
         End Try
     End Sub
 
-    ''' <summary>Adds a List(Of String) into any ComboBox.</summary>
     Private Sub LoadComboFromList(combo As ComboBox, items As List(Of String))
-        For Each item In items
-            combo.Items.Add(item)
-        Next
+        For Each item In items : combo.Items.Add(item) : Next
     End Sub
 
-    ''' <summary>Binds the product DataTable returned by the controller.</summary>
     Private Sub LoadProductDropdown()
         Dim dt = ctrl.GetAllProducts()
         cboProduct.DataSource = dt
@@ -261,19 +221,14 @@ Public Class frmTransaction
         cboProduct.SelectedIndex = -1
     End Sub
 
-
-    ' ==============================================================
-    '  COMBO-BOX EVENT HANDLERS
-    ' ==============================================================
-
-    Private Sub cboSalesLocation_SelectedIndexChanged(sender As Object, e As EventArgs) _
-        Handles cboSalesLocation.SelectedIndexChanged
-
+    ' ========================================================================
+    '  DYNAMIC UI EVENTS
+    ' ========================================================================
+    Private Sub cboSalesLocation_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSalesLocation.SelectedIndexChanged
         Dim isRelevant = (tag1 = TX_SALES OrElse tag1 = TX_INTERNAL_TRANSFER)
         If Not isRelevant OrElse cboSalesLocation.Text.Trim() = "" Then Return
 
         Try
-            ' ── CONTROLLER: filtered product list for the chosen location ──
             Dim dt = ctrl.GetProductsInStock(cboSalesLocation.Text.Trim())
             cboProduct.DataSource = Nothing
             cboProduct.Items.Clear()
@@ -287,9 +242,7 @@ Public Class frmTransaction
         End Try
     End Sub
 
-    Private Sub cboProduct_SelectedIndexChanged(sender As Object, e As EventArgs) _
-        Handles cboProduct.SelectedIndexChanged
-
+    Private Sub cboProduct_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboProduct.SelectedIndexChanged
         If cboProduct.SelectedIndex = -1 Then
             HideProductPriceAndStock()
             Return
@@ -298,12 +251,9 @@ Public Class frmTransaction
 
         Try
             Dim productId = Convert.ToInt32(cboProduct.SelectedValue)
-            Dim isBranchSelected = (tag1 = TX_SALES OrElse tag1 = TX_INTERNAL_TRANSFER) _
-                                   AndAlso cboSalesLocation.Text <> LOCATION_MAIN_WAREHOUSE _
-                                   AndAlso cboSalesLocation.Text <> ""
+            Dim isBranchSelected = (tag1 = TX_SALES OrElse tag1 = TX_INTERNAL_TRANSFER) AndAlso cboSalesLocation.Text <> LOCATION_MAIN_WAREHOUSE AndAlso cboSalesLocation.Text <> ""
             Dim location = If(isBranchSelected, cboSalesLocation.Text.Trim(), LOCATION_MAIN_WAREHOUSE)
 
-            ' ── CONTROLLER: price + stock for the selected product/location ──
             Dim detail = ctrl.GetProductDetail(productId, location)
             lblNewStockCount.Text = detail.StockLabel
             txtNewBuyPrice.Text = detail.Price.ToString()
@@ -314,85 +264,49 @@ Public Class frmTransaction
         End Try
     End Sub
 
-    Private Sub cboDeliveryType_SelectedIndexChanged(sender As Object, e As EventArgs) _
-        Handles cboDeliveryType.SelectedIndexChanged
-
+    Private Sub cboDeliveryType_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboDeliveryType.SelectedIndexChanged
         dtpShippingDate.Format = DateTimePickerFormat.Long
         dtpShippingDate.ShowUpDown = False
-
         Dim isCourier = (cboDeliveryType.Text = DELIVERY_TYPE_COURIER)
-        SetVisible(isCourier, lblCourier, cboCourier,
-                              lblShippingFee, txtShippingFee,
-                              lblShippingDate, dtpShippingDate)
+        SetVisible(isCourier, lblCourier, cboCourier, lblShippingFee, txtShippingFee, lblShippingDate, dtpShippingDate)
     End Sub
 
-
-    ' ==============================================================
-    '  NEW ENTITY TOGGLE HANDLERS  (unchanged)
-    ' ==============================================================
-
-    Private Sub chkNewTarget_CheckedChanged(sender As Object, e As EventArgs) _
-        Handles chkNewTarget.CheckedChanged
-
+    Private Sub chkNewTarget_CheckedChanged(sender As Object, e As EventArgs) Handles chkNewTarget.CheckedChanged
         Dim isNew = chkNewTarget.Checked
         cboTarget.Visible = Not isNew
-        SetVisible(isNew, lblNewCompanyName, txtNewCompanyName,
-                          lblNewContactPerson, txtNewContactPerson)
-
+        SetVisible(isNew, lblNewCompanyName, txtNewCompanyName, lblNewContactPerson, txtNewContactPerson)
         Dim showThirdField = isNew AndAlso tag1 <> TX_SALES
         lblNewCountryOrigin.Visible = showThirdField
         txtNewCountryOrigin.Visible = showThirdField
-
         If Not isNew Then ClearNewTargetInputs()
     End Sub
 
-    Private Sub chkNewProduct_CheckedChanged(sender As Object, e As EventArgs) _
-        Handles chkNewProduct.CheckedChanged
-
+    Private Sub chkNewProduct_CheckedChanged(sender As Object, e As EventArgs) Handles chkNewProduct.CheckedChanged
         Dim isNew = chkNewProduct.Checked
         cboProduct.Visible = Not isNew
         SetVisible(isNew, lblNewItemName, txtNewItemName)
-
-        If isNew Then
-            ShowNewProductFields()
-        Else
-            HideNewProductFields()
-        End If
+        If isNew Then ShowNewProductFields() Else HideNewProductFields()
     End Sub
 
     Private Sub ShowNewProductFields()
-        lblNewBuyPrice.Text = "Buying Price:"
-        txtNewBuyPrice.ReadOnly = False
-        lblNewStockCount.Text = "Initial Stock:"
-        txtNewStockCount.ReadOnly = False
-        SetVisible(True, lblNewBuyPrice, txtNewBuyPrice,
-                         lblNewStockCount, txtNewStockCount,
-                         lblNewSellPrice, txtNewSellPrice)
-
+        lblNewBuyPrice.Text = "Buying Price:" : txtNewBuyPrice.ReadOnly = False
+        lblNewStockCount.Text = "Initial Stock:" : txtNewStockCount.ReadOnly = False
+        SetVisible(True, lblNewBuyPrice, txtNewBuyPrice, lblNewStockCount, txtNewStockCount, lblNewSellPrice, txtNewSellPrice)
         Dim isWorkSchedule = (tag1 = TX_WORK_SCHEDULE)
-        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor,
-                                       lblNewSize, txtNewSize,
-                                       lblNewStatus, cboNewStatus)
+        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus)
         ClearNewProductInputs()
     End Sub
 
     Private Sub HideNewProductFields()
-        lblNewBuyPrice.Text = "Current Price:"
-        txtNewBuyPrice.ReadOnly = True
-        lblNewStockCount.Text = "Current Stock:"
-        txtNewStockCount.ReadOnly = True
+        lblNewBuyPrice.Text = "Current Price:" : txtNewBuyPrice.ReadOnly = True
+        lblNewStockCount.Text = "Current Stock:" : txtNewStockCount.ReadOnly = True
         HideProductPriceAndStock()
-        SetVisible(False, lblNewSellPrice, txtNewSellPrice,
-                          lblNewColor, txtNewColor,
-                          lblNewSize, txtNewSize,
-                          lblNewStatus, cboNewStatus)
+        SetVisible(False, lblNewSellPrice, txtNewSellPrice, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus)
     End Sub
 
-
-    ' ==============================================================
-    '  PROCESS BUTTON  (unchanged)
-    ' ==============================================================
-
+    ' ========================================================================
+    '  THE MASTER PROCESSOR (Now relies heavily on the Service!)
+    ' ========================================================================
     Private Sub btnProcess_Click(sender As Object, e As EventArgs) Handles btnProcess.Click
         If Not IsFormReadyToProcess() Then Return
         Try
@@ -406,16 +320,16 @@ Public Class frmTransaction
             End Select
             If success Then OnTransactionSuccess()
         Catch ex As Exception
-            ShowError("Error processing transaction: " & ex.Message)
+            ShowError("System Error: " & ex.Message)
         End Try
     End Sub
 
     Private Function IsFormReadyToProcess() As Boolean
-        If Not chkNewTarget.Checked AndAlso cboTarget.Text = "" Then
+        If Not chkNewTarget.Checked AndAlso cboTarget.Text = "" AndAlso tag1 <> TX_INTERNAL_TRANSFER Then
             ShowWarning("Please select a target entity to proceed.", "Validation Error")
             Return False
         End If
-        If Not chkNewProduct.Checked AndAlso cboProduct.Text = "" Then
+        If Not chkNewProduct.Checked AndAlso cboProduct.Text = "" AndAlso tag1 <> TX_WORK_SCHEDULE AndAlso tag1 <> TX_INTERNAL_TRANSFER Then
             ShowWarning("Please select a secondary entity to proceed.", "Validation Error")
             Return False
         End If
@@ -423,9 +337,7 @@ Public Class frmTransaction
     End Function
 
     Private Sub OnTransactionSuccess()
-        If tag1 <> TX_SALES Then
-            MsgBox("Transaction processed successfully!", MsgBoxStyle.Information)
-        End If
+        If tag1 <> TX_SALES Then MsgBox("Transaction processed successfully!", MsgBoxStyle.Information)
         txtQuantity.Clear()
         If txtDownPayment.Visible Then txtDownPayment.Clear()
         If txtShippingFee.Visible Then txtShippingFee.Clear()
@@ -434,428 +346,135 @@ Public Class frmTransaction
         chkNewProduct.Checked = False
     End Sub
 
+    Private Function GetProductInfoFromUI() As TransactionService.ProductInfo
+        Return New TransactionService.ProductInfo() With {
+            .IsNew = chkNewProduct.Checked,
+            .Id = If(chkNewProduct.Checked, -1, Convert.ToInt32(cboProduct.SelectedValue)),
+            .Name = If(chkNewProduct.Checked, txtNewItemName.Text.Trim(), cboProduct.Text.Trim()),
+            .BuyPrice = ParseDecimal(txtNewBuyPrice.Text),
+            .SellPrice = ParseDecimal(txtNewSellPrice.Text),
+            .Color = txtNewColor.Text.Trim(),
+            .Size = txtNewSize.Text.Trim(),
+            .Status = cboNewStatus.Text.Trim(),
+            .InitialStock = CInt(Val(txtNewStockCount.Text))
+        }
+    End Function
     Private Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
         Me.Close()
     End Sub
 
-
-    ' ==============================================================
-    '  TRANSACTION ENGINES  — delegate DB work to the controller
-    ' ==============================================================
-
-    ' ── RESTOCK ─────────────────────────────────────────────────
-
     Private Function ProcessRestocking() As Boolean
-        Dim supplierId = ResolveOrCreateSupplier()
-        If supplierId = -1 Then Return False
-
-        Dim productId = ResolveOrCreateProduct()
-        If productId = -1 Then Return False
-
-        Dim qty As Integer
-        If Not TryParseQuantity(txtQuantity.Text, qty) Then Return False
-
-        ' Buying price: from the "new product" textbox or queried from DB
-        Dim buyingPrice As Decimal = 0
-        If chkNewProduct.Checked Then
-            buyingPrice = ParseDecimal(txtNewBuyPrice.Text)
-        Else
-            readquery($"SELECT buying_price FROM product WHERE product_id = {productId}")
-            If cmdread.HasRows AndAlso cmdread.Read() Then
-                buyingPrice = Convert.ToDecimal(cmdread("buying_price"))
-            End If
-        End If
-
-        ' ── CONTROLLER: writes provides + updates stock_count ──
-        Return ctrl.ProcessRestock(supplierId, productId, qty, FormatDate(dtpReservationDate), buyingPrice)
-    End Function
-
-    ''' <summary>Returns supplier_id (-1 on failure).</summary>
-    Private Function ResolveOrCreateSupplier() As Integer
-        If Not chkNewTarget.Checked Then
-            Dim name = EscSql(cboTarget.Text.Trim())
-            readquery($"SELECT supplier_id FROM supplier WHERE company_name = '{name}'")
-            If cmdread.HasRows AndAlso cmdread.Read() Then Return Convert.ToInt32(cmdread("supplier_id"))
-            Return -1
-        End If
-
-        Dim newName = txtNewCompanyName.Text.Trim()
-        If newName = "" Then
-            ShowWarning("Please enter Supplier details.", "Validation Error")
-            Return -1
-        End If
-
-        ' ── CONTROLLER: insert if not exists, return ID ──
-        Return ctrl.ResolveSupplier(EscSql(newName),
-                                    EscSql(txtNewContactPerson.Text.Trim()),
-                                    EscSql(txtNewCountryOrigin.Text.Trim()))
-    End Function
-
-
-    ' ── SALES ────────────────────────────────────────────────────
-
-    Private Function ProcessSales() As Boolean
-        ' Capture display name before resolving (needed for receipt)
-        Dim customerName = If(chkNewTarget.Checked,
-                              txtNewCompanyName.Text.Trim(),
-                              cboTarget.Text.Trim())
-
-        Dim customerId = ResolveOrCreateCustomer()
-        If customerId = -1 Then Return False
-
-        Dim productId = ResolveOrCreateProduct()
-        If productId = -1 Then Return False
-
-        Dim qty As Integer
-        If Not TryParseQuantity(txtQuantity.Text, qty) Then Return False
-
-        Dim salesLocation = cboSalesLocation.Text.Trim()
-        If salesLocation = "" Then
-            ShowWarning("Select Sales Location.", "Validation Error")
-            Return False
-        End If
-
-        Dim sellingPrice As Double = If(chkNewProduct.Checked,
-                                        ParseDecimal(txtNewSellPrice.Text),
-                                        ParseDecimal(txtNewBuyPrice.Text))
-        Dim shippingFee As Double = 0
-        Dim shippingDateSql = "NULL"
-        Dim statusValue = If(cboStatus.Text.Trim() = "", STATUS_PENDING, cboStatus.Text.Trim())
-        Dim downPayment = ParseDecimal(txtDownPayment.Text)
-        Dim grandTotal = (sellingPrice * qty) + shippingFee
-
-        If cboDeliveryType.Text = DELIVERY_TYPE_COURIER Then
-            If Not IsValidCourierDelivery(shippingFee, shippingDateSql) Then Return False
-            grandTotal = (sellingPrice * qty) + shippingFee
-        End If
-
-        If Not IsValidPayment(downPayment, grandTotal, statusValue) Then Return False
-        If Not IsStockSufficient(productId, qty, salesLocation) Then Return False
-
-        ' ── CONTROLLER: build request struct & execute sale ──
-        Dim req As New TransactionController.SaleRequest() With {
-            .CustomerId = customerId,
-            .ProductId = productId,
-            .Quantity = qty,
-            .ReservationDate = FormatDate(dtpReservationDate),
-            .Status = statusValue,
-            .DownPayment = downPayment,
-            .ShippingFee = shippingFee,
-            .ShippingDateSql = shippingDateSql,
-            .SalesLocation = EscSql(salesLocation),
-            .IsCourierDelivery = (cboDeliveryType.Text = DELIVERY_TYPE_COURIER),
-            .CourierName = EscSql(cboCourier.Text.Trim())
+        Dim req As New TransactionService.RestockRequest() With {
+            .Quantity = CInt(Val(txtQuantity.Text)),
+            .SupplyDate = FormatDate(dtpReservationDate),
+            .Product = GetProductInfoFromUI(),
+            .Supplier = New TransactionService.SupplierInfo() With {
+                .IsNew = chkNewTarget.Checked,
+                .Name = If(chkNewTarget.Checked, txtNewCompanyName.Text.Trim(), cboTarget.Text.Trim()),
+                .ContactPerson = txtNewContactPerson.Text.Trim(),
+                .CountryOrigin = txtNewCountryOrigin.Text.Trim()
+            }
         }
 
-        If ctrl.ProcessSale(req) Then
-            Dim productDisplayName = If(chkNewProduct.Checked, txtNewItemName.Text, cboProduct.Text)
-            MsgBox(BuildReceiptText(customerName, salesLocation, productDisplayName,
-                                   qty, sellingPrice, shippingFee, grandTotal, downPayment, statusValue),
-                   MsgBoxStyle.Information, "Transaction Processed - Digital Receipt")
+        Dim res = service.ProcessRestock(req)
+        If Not res.Success Then ShowWarning(res.Message, "Restock Error")
+        Return res.Success
+    End Function
 
-            ' ── CONTROLLER: low-stock alert after deduction ──
-            CheckAndShowLowStockAlert(productId, salesLocation)
+    Private Function ProcessSales() As Boolean
+        Dim req As New TransactionService.SaleRequest() With {
+            .Quantity = CInt(Val(txtQuantity.Text)),
+            .SalesLocation = cboSalesLocation.Text.Trim(),
+            .ReservationDate = FormatDate(dtpReservationDate),
+            .OrderStatus = If(cboStatus.Text.Trim() = "", STATUS_PENDING, cboStatus.Text.Trim()),
+            .DownPayment = ParseDecimal(txtDownPayment.Text),
+            .IsCourier = (cboDeliveryType.Text = DELIVERY_TYPE_COURIER),
+            .CourierName = cboCourier.Text.Trim(),
+            .ShippingFee = ParseDecimal(txtShippingFee.Text),
+            .ShippingDate = If(cboDeliveryType.Text = DELIVERY_TYPE_COURIER, $"'{dtpShippingDate.Value:yyyy-MM-dd}'", "NULL"),
+            .Product = GetProductInfoFromUI(),
+            .Customer = New TransactionService.CustomerInfo() With {
+                .IsNew = chkNewTarget.Checked,
+                .Name = If(chkNewTarget.Checked, txtNewCompanyName.Text.Trim(), cboTarget.Text.Trim()),
+                .Address = txtNewContactPerson.Text.Trim()
+            }
+        }
+
+        Dim res = service.ProcessSale(req)
+        If res.Success Then
+            MsgBox(res.Receipt, MsgBoxStyle.Information, "Transaction Processed")
+            CheckAndShowLowStockAlert(req.Product.Id, req.SalesLocation)
             Return True
+        Else
+            ShowWarning(res.Message, "Sales Error")
+            Return False
         End If
-        Return False
     End Function
-
-    ''' <summary>Returns customer_id (-1 on failure).</summary>
-    Private Function ResolveOrCreateCustomer() As Integer
-        If Not chkNewTarget.Checked Then
-            Dim name = EscSql(cboTarget.Text.Trim())
-            readquery($"SELECT customer_id FROM customer WHERE customer_name = '{name}'")
-            If cmdread.HasRows AndAlso cmdread.Read() Then Return Convert.ToInt32(cmdread("customer_id"))
-            Return -1
-        End If
-
-        Dim newName = txtNewCompanyName.Text.Trim()
-        If newName = "" Then
-            ShowWarning("Please enter Customer details.", "Validation Error")
-            Return -1
-        End If
-
-        ' ── CONTROLLER: insert if not exists, return ID ──
-        Return ctrl.ResolveCustomer(EscSql(newName), EscSql(txtNewContactPerson.Text.Trim()))
-    End Function
-
-
-    ' ── STORE ASSIGNMENT ─────────────────────────────────────────
 
     Private Function ProcessStoreAssignment() As Boolean
-        Dim branchId = ResolveOrCreateBranch()
-        If branchId = -1 Then Return False
+        Dim req As New TransactionService.StoreAssignRequest() With {
+            .Quantity = CInt(Val(txtQuantity.Text)),
+            .RestockDate = FormatDate(dtpReservationDate),
+            .Product = GetProductInfoFromUI(),
+            .Branch = New TransactionService.BranchInfo() With {
+                .IsNew = chkNewTarget.Checked,
+                .Name = If(chkNewTarget.Checked, txtNewCompanyName.Text.Trim(), cboTarget.Text.Trim()),
+                .Address = txtNewContactPerson.Text.Trim(),
+                .OperatingHours = txtNewCountryOrigin.Text.Trim()
+            }
+        }
 
-        Dim productId = ResolveOrCreateProduct()
-        If productId = -1 Then Return False
-
-        Dim qty As Integer
-        If Not TryParseQuantity(txtQuantity.Text, qty) Then Return False
-
-        ' ── CONTROLLER: warehouse stock check ──
-        If ctrl.GetWarehouseStock(productId) < qty Then
-            ShowWarning("Not enough stock in main inventory to send to branch!", "Stock Error")
-            Return False
-        End If
-
-        ' ── CONTROLLER: insert/update stores, deduct from warehouse ──
-        Return ctrl.ProcessStoreAssignment(branchId, productId, qty, FormatDate(dtpReservationDate))
+        Dim res = service.ProcessStoreAssignment(req)
+        If Not res.Success Then ShowWarning(res.Message, "Store Assignment Error")
+        Return res.Success
     End Function
-
-    ''' <summary>Returns branch_id (-1 on failure).</summary>
-    Private Function ResolveOrCreateBranch() As Integer
-        If Not chkNewTarget.Checked Then
-            Dim name = EscSql(cboTarget.Text.Trim())
-            readquery($"SELECT branch_id FROM branch WHERE branch_name = '{name}'")
-            If cmdread.HasRows AndAlso cmdread.Read() Then Return Convert.ToInt32(cmdread("branch_id"))
-            Return -1
-        End If
-
-        Dim newName = txtNewCompanyName.Text.Trim()
-        If newName = "" Then Return -1
-
-        ' ── CONTROLLER: insert if not exists, return ID ──
-        Return ctrl.ResolveBranch(EscSql(newName),
-                                  EscSql(txtNewContactPerson.Text.Trim()),
-                                  EscSql(txtNewCountryOrigin.Text.Trim()))
-    End Function
-
-
-    ' ── WORK SCHEDULE ────────────────────────────────────────────
 
     Private Function ProcessWorkSchedule() As Boolean
-        Dim employeeId = ResolveOrCreateEmployee()
-        If employeeId = -1 Then Return False
+        Dim req As New TransactionService.WorkScheduleRequest() With {
+            .ScheduledDate = FormatDate(dtpReservationDate),
+            .StartTime = dtpStartTime.Value.ToString("HH:mm:ss"),
+            .EndTime = dtpShippingDate.Value.ToString("HH:mm:ss"),
+            .Employee = New TransactionService.EmployeeInfo() With {
+                .IsNew = chkNewTarget.Checked,
+                .Name = If(chkNewTarget.Checked, txtNewCompanyName.Text.Trim(), cboTarget.Text.Trim()),
+                .Role = txtNewContactPerson.Text.Trim(),
+                .Email = txtNewCountryOrigin.Text.Trim()
+            },
+            .Branch = New TransactionService.BranchInfo() With {
+                .IsNew = chkNewProduct.Checked,
+                .Name = If(chkNewProduct.Checked, txtNewItemName.Text.Trim(), cboProduct.Text.Trim()),
+                .Address = txtNewBuyPrice.Text.Trim(),
+                .OperatingHours = txtNewSellPrice.Text.Trim()
+            }
+        }
 
-        Dim scheduledDate = FormatDate(dtpReservationDate)
-        Dim startTime = dtpStartTime.Value.ToString("HH:mm:ss")
-        Dim endTime = dtpShippingDate.Value.ToString("HH:mm:ss")
-
-        If dtpStartTime.Value.TimeOfDay >= dtpShippingDate.Value.TimeOfDay Then
-            ShowWarning("Start Time must be earlier than End Time.", "Validation Error")
-            Return False
-        End If
-
-        ' ── CONTROLLER: overlap check using employee ID ──
-        If ctrl.HasScheduleConflict(employeeId, scheduledDate, startTime, endTime) Then
-            Dim empName = If(chkNewTarget.Checked,
-                             txtNewCompanyName.Text.Trim(),
-                             cboTarget.Text.Trim())
-            ShowWarning($"Schedule Conflict! {empName} already has an overlapping shift on {scheduledDate}.",
-                        "HR Warning")
-            Return False
-        End If
-
-        Dim branchId = ResolveOrCreateBranchForSchedule()
-        If branchId = -1 Then Return False
-
-        ' ── CONTROLLER: insert works_in row ──
-        Return ctrl.ProcessWorkSchedule(employeeId, branchId, scheduledDate, startTime, endTime)
+        Dim res = service.ProcessWorkSchedule(req)
+        If Not res.Success Then ShowWarning(res.Message, "Work Schedule Error")
+        Return res.Success
     End Function
-
-    ''' <summary>Returns employee_id (-1 on failure).</summary>
-    Private Function ResolveOrCreateEmployee() As Integer
-        If Not chkNewTarget.Checked Then
-            Dim name = EscSql(cboTarget.Text.Trim())
-            readquery($"SELECT employee_id FROM employee WHERE employee_name = '{name}'")
-            If cmdread.HasRows AndAlso cmdread.Read() Then Return Convert.ToInt32(cmdread("employee_id"))
-            Return -1
-        End If
-
-        Dim newName = txtNewCompanyName.Text.Trim()
-        If newName = "" Then Return -1
-
-        Dim email = txtNewCountryOrigin.Text.Trim()
-        If Not Regex.IsMatch(email, EMAIL_REGEX) Then
-            ShowWarning("Please enter a valid Email Address (e.g., user@domain.com).", "Data Hygiene Error")
-            Return -1
-        End If
-
-        ' ── CONTROLLER: insert if not exists, return ID ──
-        Return ctrl.ResolveEmployee(EscSql(newName),
-                                    EscSql(txtNewContactPerson.Text.Trim()),
-                                    EscSql(email))
-    End Function
-
-    ''' <summary>Resolves/creates the branch chosen in the schedule flow (cboProduct slot).</summary>
-    Private Function ResolveOrCreateBranchForSchedule() As Integer
-        If Not chkNewProduct.Checked Then
-            Dim name = EscSql(cboProduct.Text.Trim())
-            readquery($"SELECT branch_id FROM branch WHERE branch_name = '{name}'")
-            If cmdread.HasRows AndAlso cmdread.Read() Then Return Convert.ToInt32(cmdread("branch_id"))
-            Return -1
-        End If
-
-        Dim newName = txtNewItemName.Text.Trim()
-        If newName = "" Then Return -1
-
-        ' In work-schedule mode the "price" boxes are reused for address / operating hours
-        Return ctrl.ResolveBranch(EscSql(newName),
-                                  EscSql(txtNewBuyPrice.Text.Trim()),
-                                  EscSql(txtNewSellPrice.Text.Trim()))
-    End Function
-
-
-    ' ── INTERNAL TRANSFER ────────────────────────────────────────
 
     Private Function ProcessInternalTransfer() As Boolean
-        Dim sourceLoc = cboSalesLocation.Text.Trim()
-        Dim destLoc = cboTarget.Text.Trim()
+        Dim req As New TransactionService.InternalTransferRequest() With {
+            .ProductId = Convert.ToInt32(cboProduct.SelectedValue),
+            .Quantity = CInt(Val(txtQuantity.Text)),
+            .SourceLocation = cboSalesLocation.Text.Trim(),
+            .DestLocation = cboTarget.Text.Trim(),
+            .TransferDate = FormatDate(dtpReservationDate)
+        }
 
-        If sourceLoc = "" OrElse destLoc = "" Then
-            ShowWarning("Please select Source and Destination.", "Validation Error")
-            Return False
-        End If
-        If sourceLoc = destLoc Then
-            ShowWarning("Source and Destination cannot be the same.", "Validation Error")
-            Return False
-        End If
-        If cboProduct.SelectedIndex = -1 Then
-            ShowWarning("Please select a product.", "Validation Error")
-            Return False
-        End If
-
-        Dim qty As Integer
-        If Not TryParseQuantity(txtQuantity.Text, qty) Then Return False
-
-        Dim productId = Convert.ToInt32(cboProduct.SelectedValue)
-
-        If Not IsTransferStockSufficient(productId, qty, sourceLoc) Then Return False
-
-        ' ── CONTROLLER: deduct source, add to destination ──
-        If ctrl.ProcessInternalTransfer(productId, qty,
-                                        EscSql(sourceLoc), EscSql(destLoc),
-                                        FormatDate(dtpReservationDate)) Then
-            CheckAndShowLowStockAlert(productId, sourceLoc)
+        Dim res = service.ProcessInternalTransfer(req)
+        If res.Success Then
+            CheckAndShowLowStockAlert(req.ProductId, req.SourceLocation)
             Return True
-        End If
-        Return False
-    End Function
-
-
-    ' ==============================================================
-    '  SHARED PRODUCT RESOLVER  (used by all transaction types)
-    ' ==============================================================
-
-    ''' <summary>Returns product_id (-1 on failure).</summary>
-    Private Function ResolveOrCreateProduct() As Integer
-        If Not chkNewProduct.Checked Then
-            Return Convert.ToInt32(cboProduct.SelectedValue)
-        End If
-
-        Dim pName = txtNewItemName.Text.Trim()
-        If pName = "" Then
-            ShowWarning("Please enter Product Name.", "Validation Error")
-            Return -1
-        End If
-
-        Dim buyPrice = ParseDecimal(txtNewBuyPrice.Text)
-        Dim sellPrice = ParseDecimal(txtNewSellPrice.Text)
-
-        If sellPrice <= buyPrice Then
-            ShowWarning("Selling price must be higher than buying price!", "Pricing Error")
-            Return -1
-        End If
-
-        ' ── CONTROLLER: insert if not exists, return ID ──
-        Return ctrl.ResolveProduct(EscSql(pName),
-                                   EscSql(txtNewColor.Text.Trim()),
-                                   EscSql(txtNewSize.Text.Trim()),
-                                   buyPrice, sellPrice,
-                                   EscSql(cboNewStatus.Text.Trim()),
-                                   CInt(Val(txtNewStockCount.Text)))
-    End Function
-
-
-    ' ==============================================================
-    '  VALIDATION HELPERS  (unchanged logic)
-    ' ==============================================================
-
-    Private Function IsValidCourierDelivery(ByRef shippingFee As Double,
-                                            ByRef shippingDateSql As String) As Boolean
-        If cboCourier.Text.Trim() = "" Then
-            ShowWarning("Select Courier.", "Validation Error")
-            Return False
-        End If
-        If dtpShippingDate.Value.Date < dtpReservationDate.Value.Date Then
-            ShowWarning("Shipping Date cannot be earlier than the Reservation Date.", "Logistics Error")
-            Return False
-        End If
-        shippingFee = ParseDecimal(txtShippingFee.Text)
-        shippingDateSql = $"'{dtpShippingDate.Value:yyyy-MM-dd}'"
-        Return True
-    End Function
-
-    Private Function IsValidPayment(downPayment As Double, grandTotal As Double,
-                                    ByRef statusValue As String) As Boolean
-        If downPayment < 0 Then
-            ShowWarning("Payment cannot be a negative number.", "Payment Error")
-            Return False
-        End If
-        If downPayment > grandTotal Then
-            ShowWarning($"Payment (₱{downPayment}) cannot exceed Grand Total ₱{grandTotal}.", "Payment Error")
-            Return False
-        End If
-        If statusValue = STATUS_DELIVERED AndAlso downPayment < grandTotal Then
-            Dim answer = MsgBox("Order is marked 'Delivered' but balance is unpaid. Change status to 'Pending'?",
-                                MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Balance Due Warning")
-            If answer = MsgBoxResult.Yes Then
-                statusValue = STATUS_PENDING
-            Else
-                Return False
-            End If
-        End If
-        Return True
-    End Function
-
-    ''' <summary>Checks sale stock using controller's stock getters.</summary>
-    Private Function IsStockSufficient(productId As Integer, qty As Integer, location As String) As Boolean
-        If location = LOCATION_MAIN_WAREHOUSE Then
-            ' ── CONTROLLER ──
-            If ctrl.GetWarehouseStock(productId) < qty Then
-                ShowWarning("Insufficient stock in Warehouse!", "Stock Error")
-                Return False
-            End If
         Else
-            ' ── CONTROLLER ──
-            Dim branchStock = ctrl.GetBranchStock(productId, EscSql(location))
-            If branchStock = -1 Then
-                ShowWarning("Branch does not carry this product!", "Stock Error")
-                Return False
-            End If
-            If branchStock < qty Then
-                ShowWarning("Insufficient stock at Branch!", "Stock Error")
-                Return False
-            End If
+            ShowWarning(res.Message, "Transfer Error")
+            Return False
         End If
-        Return True
     End Function
-
-    Private Function IsTransferStockSufficient(productId As Integer, qty As Integer, sourceLoc As String) As Boolean
-        If sourceLoc = LOCATION_MAIN_WAREHOUSE Then
-
-            If ctrl.GetWarehouseStock(productId) < qty Then
-                ShowWarning("Not enough stock in the Main Warehouse!", "Stock Error")
-                Return False
-            End If
-        Else
-
-            Dim branchStock = ctrl.GetBranchStock(productId, EscSql(sourceLoc))
-            If branchStock = -1 Then
-                ShowWarning("Source branch does not have this product!", "Stock Error")
-                Return False
-            End If
-            If branchStock < qty Then
-                ShowWarning("Not enough stock at source branch!", "Stock Error")
-                Return False
-            End If
-        End If
-        Return True
-    End Function
-
     Private Sub CheckAndShowLowStockAlert(productId As Integer, location As String)
         Try
-            Dim ls = ctrl.CheckLowStock(productId, EscSql(location))
+            ' We safely use the Controller just to check the UI popup condition
+            Dim ls = ctrl.CheckLowStock(productId, location.Replace("'", "''"))
             If ls.IsLow Then
                 Dim locationLabel = If(location = LOCATION_MAIN_WAREHOUSE, "Main Warehouse", location)
                 ShowWarning($"⚠️ CRITICAL: '{ls.ItemName}' at {locationLabel} has dropped to {ls.CurrentStock} units!" &
@@ -865,48 +484,8 @@ Public Class frmTransaction
         End Try
     End Sub
 
-    Private Function BuildReceiptText(customerName As String, location As String,
-                                      productName As String, qty As Integer,
-                                      unitPrice As Double, shippingFee As Double,
-                                      grandTotal As Double, paid As Double,
-                                      orderStatus As String) As String
-        Dim balance = grandTotal - paid
-        Return String.Join(vbCrLf,
-            "===================================",
-            "        MING'S CRAFT INVOICE       ",
-            "===================================",
-            $"Date:     {Now:yyyy-MM-dd HH:mm}",
-            $"Customer: {customerName}",
-            $"Location: {location}",
-            "-----------------------------------",
-            $"Item:     {productName}",
-            $"Qty:      {qty} @ ₱{unitPrice}",
-            $"Shipping: ₱{shippingFee}",
-            "-----------------------------------",
-            $"GRAND TOTAL:  ₱{grandTotal}",
-            $"PAID:         ₱{paid}",
-            $"BALANCE DUE:  ₱{balance}",
-            "===================================",
-            $"Order Status: {orderStatus}")
-    End Function
-
-
-    ' ==============================================================
-    '  UTILITY HELPERS  (unchanged)
-    ' ==============================================================
-
-    Private Function EscSql(value As String) As String
-        Return value.Replace("'", "''")
-    End Function
-
     Private Function FormatDate(dtp As DateTimePicker) As String
         Return dtp.Value.ToString("yyyy-MM-dd")
-    End Function
-
-    Private Function TryParseQuantity(raw As String, ByRef result As Integer) As Boolean
-        If Integer.TryParse(raw.Trim(), result) AndAlso result > 0 Then Return True
-        ShowWarning("Please enter a valid positive quantity.", "Validation Error")
-        Return False
     End Function
 
     Private Function ParseDecimal(raw As String) As Double
@@ -916,8 +495,8 @@ Public Class frmTransaction
     End Function
 
     Private Sub SetVisible(visible As Boolean, ParamArray controls() As Control)
-        For Each ctrl As Control In controls
-            If ctrl IsNot Nothing Then ctrl.Visible = visible
+        For Each ctrlObj As Control In controls
+            If ctrlObj IsNot Nothing Then ctrlObj.Visible = visible
         Next
     End Sub
 

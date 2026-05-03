@@ -9,17 +9,19 @@ Public Class MainPanel
     Private currentCustID As Integer = 0
     Private currentProdID As Integer = 0
     Private currentOrderDate As String = ""
+    Dim controller As New TransactionController
+    Dim service As New TransactionService(controller)
 
-    Private Sub PriceOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtField2.KeyPress, txtField3.KeyPress
-        If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) AndAlso (e.KeyChar <> "."c) Then
+    Private Sub PriceOnly_KeyPress(sender As Object, e As KeyPressEventArgs)
+        If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) AndAlso e.KeyChar <> "."c Then
             e.Handled = True
         End If
-        If (e.KeyChar = "."c) AndAlso (CType(sender, TextBox).Text.IndexOf("."c) > -1) Then
+        If e.KeyChar = "."c AndAlso CType(sender, TextBox).Text.IndexOf("."c) > -1 Then
             e.Handled = True
         End If
     End Sub
 
-    Private Sub WholeNumberOnly_KeyPress(sender As Object, e As KeyPressEventArgs) Handles txtField7.KeyPress
+    Private Sub WholeNumberOnly_KeyPress(sender As Object, e As KeyPressEventArgs)
         If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then
             e.Handled = True
         End If
@@ -152,6 +154,33 @@ Public Class MainPanel
             lblSeries.Visible = False : cboSeries.Visible = False
             btnSave.Text = "✔ Mark Delivered"
             btnClear.Visible = True
+        ElseIf choice = 9 Then
+            lblField.Text = "BULK BRANCH RETRIEVAL"
+            cboReport.Items.Clear()
+            readquery("SELECT branch_name FROM branch ORDER BY branch_name")
+            While cmdread.Read()
+                cboReport.Items.Add(cmdread("branch_name").ToString())
+            End While
+            cboReport.Text = "Select Branch to Empty..."
+
+
+            setcontrolsvisible(False, lblField1, txtField1, lblField2, txtField2, lblField3, txtField3,
+                               lblField4, cbBox1, lblField5, txtField5, lblField6, txtField6,
+                               lblField7, txtField7, lblSeries, cboSeries)
+
+            lblField2.Visible = False
+            lblField3.Visible = False
+
+            cboReport.Visible = True
+            cboReport.Text = "Select Branch to Empty..."
+
+
+            btnClear.Text = "Run Bulk Retrieval"
+            btnClear.Visible = True
+            btnSave.Visible = False
+            btnDelete.Visible = False
+
+            dgvReport.Visible = True
         End If
         LoadGridData()
     End Sub
@@ -168,36 +197,50 @@ Public Class MainPanel
             sql = generateSearchQuery(searchVal)
             dgvData.DataSource = getDataTable(sql)
             dgvData.AutoResizeColumns()
+            If dgvData.Rows.Count = 1 Then
+                Dim row As DataGridViewRow = dgvData.Rows(0)
+                currentID = Val(row.Cells("ID").Value.ToString())
+                LoadRecordDetails(currentID)
+                btnDelete.Enabled = True
+                If choice <> 9 Then
+                    btnSave.Text = "Update Record"
+                End If
+            End If
         Catch ex As Exception
             MsgBox("Error loading grid: " & ex.Message)
         End Try
     End Sub
+    Private Sub setcontrolsvisible(isVisible As Boolean, ParamArray controls() As Control)
+        For Each ctrl As Control In controls
+            ctrl.Visible = isVisible
+        Next
+    End Sub
     Private Function generateSearchQuery(searchVal As String) As String
         Dim sql As String = ""
-        If choice = 1 Then
-            Sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.status AS Status, p.stock_count AS Stock, s.series_name AS Series " &
+        If choice = 1 OrElse choice = 9 Then
+            sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.status AS Status, p.stock_count AS Stock, s.series_name AS Series " &
                   "FROM product p LEFT JOIN series s ON p.series_id = s.series_id"
-            If searchVal <> "" Then Sql &= " WHERE p.item_name LIKE '%" & searchVal & "%'"
+            If searchVal <> "" Then sql &= " WHERE p.item_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 2 Then
-            Sql = "SELECT supplier_id AS ID, company_name AS Company, contact_person AS Contact FROM supplier"
-            If searchVal <> "" Then Sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT supplier_id AS ID, company_name AS Company, contact_person AS Contact FROM supplier"
+            If searchVal <> "" Then sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 3 Then
-            Sql = "SELECT customer_id AS ID, customer_name AS Name, address AS Address FROM customer"
-            If searchVal <> "" Then Sql &= " WHERE customer_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT customer_id AS ID, customer_name AS Name, address AS Address FROM customer"
+            If searchVal <> "" Then sql &= " WHERE customer_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 4 Then
-            Sql = "SELECT employee_id AS ID, employee_name AS Name, role AS Role FROM employee"
-            If searchVal <> "" Then Sql &= " WHERE employee_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT employee_id AS ID, employee_name AS Name, role AS Role FROM employee"
+            If searchVal <> "" Then sql &= " WHERE employee_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 5 Then
-            Sql = "SELECT courier_id AS ID, company_name AS Company, contact_number AS Contact FROM courier"
-            If searchVal <> "" Then Sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT courier_id AS ID, company_name AS Company, contact_number AS Contact FROM courier"
+            If searchVal <> "" Then sql &= " WHERE company_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 6 Then
-            Sql = "SELECT series_id AS ID, series_name AS Name, release_year AS Year FROM series"
-            If searchVal <> "" Then Sql &= " WHERE series_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT series_id AS ID, series_name AS Name, release_year AS Year FROM series"
+            If searchVal <> "" Then sql &= " WHERE series_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 7 Then
-            Sql = "SELECT branch_id AS ID, branch_name AS Name, address AS Address, operating_hours AS 'Operating Hours' FROM branch"
-            If searchVal <> "" Then Sql &= " WHERE branch_name LIKE '%" & searchVal & "%'"
+            sql = "SELECT branch_id AS ID, branch_name AS Name, address AS Address, operating_hours AS 'Operating Hours' FROM branch"
+            If searchVal <> "" Then sql &= " WHERE branch_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 8 Then
-            Sql = "SELECT pu.customer_id AS CustID, pu.product_id AS ProdID, " &
+            sql = "SELECT pu.customer_id AS CustID, pu.product_id AS ProdID, " &
                   "c.customer_name AS Customer, p.item_name AS Product, " &
                   "pu.quantity AS Qty, pu.reservation_date AS 'Order Date', " &
                   "pu.status AS Status " &
@@ -205,33 +248,33 @@ Public Class MainPanel
                   "INNER JOIN customer c ON pu.customer_id = c.customer_id " &
                   "INNER JOIN product p ON pu.product_id = p.product_id"
             If searchVal <> "" Then
-                Sql &= " WHERE (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%')"
+                sql &= " WHERE (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%')"
             End If
-            Sql &= " ORDER BY pu.reservation_date DESC"
+            sql &= " ORDER BY pu.reservation_date DESC"
         End If
-        Return Sql
+        Return sql
     End Function
 
 
 
-    Private Sub txtSearch_TextChanged(sender As Object, e As EventArgs) Handles txtSearch.TextChanged
+    Private Sub txtSearch_TextChanged(sender As Object, e As EventArgs)
         If operation = 5 Then
-            If cboReport.Text <> "" Then btnRunReport.PerformClick()
+            If cboReport.Text <> "" Then btnRunReport.PerformClick
         Else
             LoadGridData()
         End If
     End Sub
 
-    Private Sub dgvData_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvData.CellClick
+    Private Sub dgvData_CellClick(sender As Object, e As DataGridViewCellEventArgs)
         If e.RowIndex >= 0 Then
-            Dim row As DataGridViewRow = dgvData.Rows(e.RowIndex)
+            Dim row = dgvData.Rows(e.RowIndex)
             If choice = 8 Then
-                currentCustID = Val(row.Cells("CustID").Value.ToString())
-                currentProdID = Val(row.Cells("ProdID").Value.ToString())
-                selQty = Val(row.Cells("Qty").Value.ToString())
-                Dim rawDate As String = row.Cells("Order Date").Value.ToString()
-                Dim parsedDate As DateTime
-                If DateTime.TryParse(rawDate, parsedDate) Then
+                currentCustID = Val(row.Cells("CustID").Value.ToString)
+                currentProdID = Val(row.Cells("ProdID").Value.ToString)
+                selQty = Val(row.Cells("Qty").Value.ToString)
+                Dim rawDate = row.Cells("Order Date").Value.ToString
+                Dim parsedDate As Date
+                If Date.TryParse(rawDate, parsedDate) Then
 
                     currentOrderDate = parsedDate.ToString("yyyy-MM-dd HH:mm:ss")
 
@@ -242,11 +285,11 @@ Public Class MainPanel
                     txtField3.Text = rawDate
                 End If
 
-                txtField1.Text = row.Cells("Customer").Value.ToString()
-                txtField2.Text = row.Cells("Product").Value.ToString()
+                txtField1.Text = row.Cells("Customer").Value.ToString
+                txtField2.Text = row.Cells("Product").Value.ToString
                 txtField3.Text = currentOrderDate
 
-                Dim status As String = row.Cells("Status").Value.ToString()
+                Dim status = row.Cells("Status").Value.ToString
                 If status = "Pending" Then
                     btnSave.Enabled = True : btnSave.Text = "✔ Mark Delivered"
                     btnDelete.Enabled = True : btnDelete.Text = "Cancel Order"
@@ -260,7 +303,7 @@ Public Class MainPanel
                 Return
             End If
 
-            currentID = Val(row.Cells("ID").Value.ToString())
+            currentID = Val(row.Cells("ID").Value.ToString)
             LoadRecordDetails(currentID)
             btnDelete.Enabled = True
             btnSave.Text = "Update Record"
@@ -269,7 +312,7 @@ Public Class MainPanel
 
     Private Function returnQuery(id As Integer) As String
         Dim str As String = ""
-        If choice = 1 Then str = "SELECT p.*, s.series_name FROM product p LEFT JOIN series s ON p.series_id = s.series_id WHERE p.product_id = " & id
+        If choice = 1 OrElse choice = 9 Then str = "SELECT p.*, s.series_name FROM product p LEFT JOIN series s ON p.series_id = s.series_id WHERE p.product_id = " & id
         If choice = 2 Then str = "SELECT * FROM supplier WHERE supplier_id = " & id
         If choice = 3 Then str = "SELECT * FROM customer WHERE customer_id = " & id
         If choice = 4 Then str = "SELECT * FROM employee WHERE employee_id = " & id
@@ -372,14 +415,13 @@ Public Class MainPanel
                            "System Paid: ₱" & dp & vbCrLf & "Grand Total: ₱" & grandTotal & vbCrLf & vbCrLf &
                            "Did the customer pay the remaining balance directly? Click YES to override and force delivery.", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Balance Due Warning")
 
-                    ' If they click No, stop the process. If they click Yes, it skips this and continues to delivery
+
                     If overrideAns = MsgBoxResult.No Then
                         Return
                     End If
                 End If
             End If
 
-            ' Final confirmation
             If MsgBox("Confirm marking this order as Delivered?", MsgBoxStyle.YesNo + MsgBoxStyle.Question) = MsgBoxResult.Yes Then
                 readquery("UPDATE purchases SET status = 'Delivered' WHERE customer_id = " & currentCustID &
                           " AND product_id = " & currentProdID & " AND reservation_date = '" & currentOrderDate & "'")
@@ -406,8 +448,8 @@ Public Class MainPanel
         End If
         Return False
     End Function
-    Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
-        If txtField1.Text.Trim() = "" Then
+    Private Sub btnSave_Click(sender As Object, e As EventArgs)
+        If txtField1.Text.Trim = "" Then
             MsgBox("Please enter a valid name in the first field.", MsgBoxStyle.Exclamation)
             Return
         End If
@@ -415,20 +457,20 @@ Public Class MainPanel
         If choice = 1 Then
             If Not isSellingPriceValid() Then Return
         ElseIf choice = 2 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all supplier details.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" OrElse txtField3.Text.Trim = "" Then MsgBox("Please completely fill out all supplier details.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 3 Then
-            If txtField2.Text.Trim() = "" Then MsgBox("Please fill in the customer address.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" Then MsgBox("Please fill in the customer address.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 4 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all employee details.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" OrElse txtField3.Text.Trim = "" Then MsgBox("Please completely fill out all employee details.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 5 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all courier details.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" OrElse txtField3.Text.Trim = "" Then MsgBox("Please completely fill out all courier details.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 6 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" OrElse txtField5.Text.Trim() = "" Then MsgBox("Please completely fill out all series details.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" OrElse txtField3.Text.Trim = "" OrElse txtField5.Text.Trim = "" Then MsgBox("Please completely fill out all series details.", MsgBoxStyle.Exclamation) : Return
             Dim rYear, tSet As Integer
-            If Not Integer.TryParse(txtField3.Text.Trim(), rYear) Then MsgBox("Release year must be a valid number.", MsgBoxStyle.Exclamation) : Return
-            If Not Integer.TryParse(txtField5.Text.Trim(), tSet) Then MsgBox("Total in set must be a whole number.", MsgBoxStyle.Exclamation) : Return
+            If Not Integer.TryParse(txtField3.Text.Trim, rYear) Then MsgBox("Release year must be a valid number.", MsgBoxStyle.Exclamation) : Return
+            If Not Integer.TryParse(txtField5.Text.Trim, tSet) Then MsgBox("Total in set must be a whole number.", MsgBoxStyle.Exclamation) : Return
         ElseIf choice = 7 Then
-            If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" Then MsgBox("Please completely fill out all branch details.", MsgBoxStyle.Exclamation) : Return
+            If txtField2.Text.Trim = "" OrElse txtField3.Text.Trim = "" Then MsgBox("Please completely fill out all branch details.", MsgBoxStyle.Exclamation) : Return
         End If
 
         If choice = 8 Then
@@ -436,10 +478,10 @@ Public Class MainPanel
             Return
         End If
 
-        Dim str As String = ""
-        Dim seriesSQL As String = "NULL"
-        If choice = 1 AndAlso cboSeries.Text.Trim() <> "" AndAlso cboSeries.Text <> "None" Then
-            seriesSQL = "(SELECT series_id FROM series WHERE series_name='" & cboSeries.Text.Trim() & "')"
+        Dim str = ""
+        Dim seriesSQL = "NULL"
+        If choice = 1 AndAlso cboSeries.Text.Trim <> "" AndAlso cboSeries.Text <> "None" Then
+            seriesSQL = "(SELECT series_id FROM series WHERE series_name='" & cboSeries.Text.Trim & "')"
         End If
 
         Try
@@ -468,7 +510,8 @@ Public Class MainPanel
             End If
 
             LoadGridData()
-            btnClear.PerformClick()
+            btnClear.PerformClick
+
 
         Catch ex As Exception
             MsgBox("Error saving record: " & ex.Message, MsgBoxStyle.Critical)
@@ -506,23 +549,41 @@ Public Class MainPanel
         If choice = 7 Then Return "UPDATE branch SET branch_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', operating_hours='" & txtField3.Text.Trim() & "' WHERE branch_id=" & currentID
         Return ""
     End Function
-    Private Sub btnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
-        txtField1.Clear() : txtField2.Clear() : txtField3.Clear()
-        txtField5.Clear() : txtField6.Clear() : txtField7.Clear()
+    Private Sub btnClear_Click(sender As Object, e As EventArgs)
+        txtField1.Clear : txtField2.Clear : txtField3.Clear
+        txtField5.Clear : txtField6.Clear : txtField7.Clear
         txtField1.ReadOnly = False : txtField2.ReadOnly = False : txtField3.ReadOnly = False
         currentID = 0 : currentTimestamp = ""
         currentCustID = 0 : currentProdID = 0 : currentOrderDate = ""
         btnDelete.Enabled = False
         btnSave.Text = If(choice = 8, "✔ Mark Delivered", "Save Record")
         If choice = 8 Then btnSave.Enabled = False
+        If choice = 9 Then
+            Dim ans = MsgBox($"Are you sure you want to retrieve ALL stock from {cboReport.Text} back to the Main Warehouse?",
+                             MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Confirm Bulk Action")
+
+            If ans = MsgBoxResult.Yes Then
+                Dim res = service.ProcessBulkRetrieval(cboReport.Text.Trim)
+                If res.Success Then
+                    MsgBox(res.Message, MsgBoxStyle.Information)
+
+                    LoadGridData()
+                    dgvReport.DataSource = Nothing
+                    cboReport.Text = "Select Branch to Empty..."
+                Else
+                    MsgBox(res.Message, MsgBoxStyle.Critical)
+                End If
+            End If
+            Return
+        End If
     End Sub
 
-    Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
+    Private Sub btnDelete_Click(sender As Object, e As EventArgs)
         If choice = 8 Then
             If currentCustID = 0 Then Return
 
-            Dim action As String = ""
-            Dim newStatus As String = ""
+            Dim action = ""
+            Dim newStatus = ""
             If btnDelete.Text = "Cancel Order" Then
                 action = "Cancel this pending order"
                 newStatus = "Cancelled"
@@ -543,13 +604,13 @@ Public Class MainPanel
                               " AND reservation_date = '" & currentOrderDate & "'")
 
                     readquery("UPDATE product SET stock_count = stock_count + " & selQty &
-                              " WHERE item_name = '" & txtField2.Text.Trim().Replace("'", "''") & "'")
+                              " WHERE item_name = '" & txtField2.Text.Trim.Replace("'", "''") & "'")
 
                     readquery("COMMIT")
 
                     MsgBox("Success! Order marked as " & newStatus & " and stock restored.", MsgBoxStyle.Information)
                     LoadGridData()
-                    btnClear.PerformClick()
+                    btnClear.PerformClick
                 Catch ex As Exception
                     readquery("ROLLBACK")
                     MsgBox("Error updating order: " & ex.Message, MsgBoxStyle.Critical)
@@ -568,7 +629,7 @@ Public Class MainPanel
                 readquery(str)
                 MsgBox("Record deleted successfully!")
                 LoadGridData()
-                btnClear.PerformClick()
+                btnClear.PerformClick
             Catch ex As Exception
                 MsgBox("Error deleting: " & ex.Message, MsgBoxStyle.Critical)
             End Try
@@ -586,25 +647,25 @@ Public Class MainPanel
         If choice = 7 Then str = "DELETE FROM branch WHERE branch_id = " & currentID
         Return str
     End Function
-    Private Sub btnRunReport_Click(sender As Object, e As EventArgs) Handles btnRunReport.Click
+    Private Sub btnRunReport_Click(sender As Object, e As EventArgs)
         If cboReport.Text = "" Then
             MsgBox("Please select a report to run.", MsgBoxStyle.Exclamation)
             Return
         End If
 
         Dim reportIndex As Integer = Val(cboReport.Text.Substring(0, 1))
-        Dim searchVal As String = ""
-        If txtSearch IsNot Nothing Then searchVal = txtSearch.Text.Trim().Replace("'", "''")
+        Dim searchVal = ""
+        If txtSearch IsNot Nothing Then searchVal = txtSearch.Text.Trim.Replace("'", "''")
 
-        Dim sql As String = GetReportQuery(reportIndex, searchVal)
+        Dim sql = GetReportQuery(reportIndex, searchVal)
 
         Try
-            Dim dt As New DataTable()
+            Dim dt As New DataTable
             dt = getDataTable(sql)
             dgvReport.DataSource = dt
 
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            dgvReport.ClearSelection()
+            dgvReport.ClearSelection
 
             lblField.Text = "REPORT: " & cboReport.Text
         Catch ex As Exception
@@ -712,17 +773,40 @@ Public Class MainPanel
                 End If
                 sql &= "ORDER BY p.item_name"
 
+            Case 9
+
+                sql = "SELECT p.product_id AS ID, p.item_name AS Name, s.quantity AS 'Branch Qty', " &
+                      "p.color AS Color, p.size AS Size " &
+                      "FROM stores s " &
+                      "INNER JOIN product p ON s.product_id = p.product_id " &
+                      "INNER JOIN branch b ON s.branch_id = b.branch_id " &
+                      "WHERE b.branch_name = '" & cboReport.Text.Replace("'", "''") & "'"
             Case Else
+
                 Return "SELECT 'Invalid report selected' AS Error"
         End Select
 
         Return sql
     End Function
+    Private Sub cboReport_SelectedIndexChanged(sender As Object, e As EventArgs)
 
-    Private Sub txtField2_TextChanged(sender As Object, e As EventArgs) Handles txtField2.TextChanged
+        If choice = 9 Then
+            Dim branchSearch = cboReport.Text.Trim
+
+            Dim sql = GetReportQuery(9, "")
+            dgvReport.DataSource = getDataTable(sql)
+            dgvReport.AutoResizeColumns
+        End If
     End Sub
-    Private Sub dgvReport_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvReport.CellContentClick
+
+    Private Sub txtField2_TextChanged(sender As Object, e As EventArgs)
     End Sub
-    Private Sub txtField3_TextChanged(sender As Object, e As EventArgs) Handles txtField3.TextChanged
+    Private Sub dgvReport_CellContentClick(sender As Object, e As DataGridViewCellEventArgs)
+    End Sub
+    Private Sub txtField3_TextChanged(sender As Object, e As EventArgs)
+    End Sub
+
+    Private Sub dgvData_CellContentClick(sender As Object, e As DataGridViewCellEventArgs)
+
     End Sub
 End Class

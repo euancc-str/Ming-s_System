@@ -72,6 +72,8 @@ Partial Class frmTransaction
         lblSalesLocation = New Label()
         dtpStartTime = New DateTimePicker()
         lblStartTime = New Label()
+        cboSeries = New ComboBox()
+        lblSeries = New Label()
         SuspendLayout()
         ' 
         ' lblTransactionHeader
@@ -530,11 +532,32 @@ Partial Class frmTransaction
         lblStartTime.TabIndex = 49
         lblStartTime.Text = "Start Time"
         ' 
+        ' cboSeries
+        ' 
+        cboSeries.Font = New Font("Segoe UI", 15F)
+        cboSeries.FormattingEnabled = True
+        cboSeries.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
+        cboSeries.Location = New Point(825, 662)
+        cboSeries.Name = "cboSeries"
+        cboSeries.Size = New Size(409, 43)
+        cboSeries.TabIndex = 52
+        ' 
+        ' lblSeries
+        ' 
+        lblSeries.AutoSize = True
+        lblSeries.Location = New Point(825, 639)
+        lblSeries.Name = "lblSeries"
+        lblSeries.Size = New Size(48, 20)
+        lblSeries.TabIndex = 51
+        lblSeries.Text = "Series"
+        ' 
         ' frmTransaction
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1811, 961)
+        Controls.Add(cboSeries)
+        Controls.Add(lblSeries)
         Controls.Add(dtpStartTime)
         Controls.Add(lblStartTime)
         Controls.Add(cboSalesLocation)
@@ -641,4 +664,6 @@ Partial Class frmTransaction
     Friend WithEvents lblSalesLocation As Label
     Friend WithEvents dtpStartTime As DateTimePicker
     Friend WithEvents lblStartTime As Label
+    Friend WithEvents cboSeries As ComboBox
+    Friend WithEvents lblSeries As Label
 End Class

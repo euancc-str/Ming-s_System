@@ -64,43 +64,43 @@ Partial Class Form1
         ' ProductToolStripMenuItem1
         ' 
         ProductToolStripMenuItem1.Name = "ProductToolStripMenuItem1"
-        ProductToolStripMenuItem1.Size = New Size(158, 26)
+        ProductToolStripMenuItem1.Size = New Size(224, 26)
         ProductToolStripMenuItem1.Text = "Product"
         ' 
         ' SupplierToolStripMenuItem
         ' 
         SupplierToolStripMenuItem.Name = "SupplierToolStripMenuItem"
-        SupplierToolStripMenuItem.Size = New Size(158, 26)
+        SupplierToolStripMenuItem.Size = New Size(224, 26)
         SupplierToolStripMenuItem.Text = "Supplier"
         ' 
         ' EmployeeToolStripMenuItem
         ' 
         EmployeeToolStripMenuItem.Name = "EmployeeToolStripMenuItem"
-        EmployeeToolStripMenuItem.Size = New Size(158, 26)
+        EmployeeToolStripMenuItem.Size = New Size(224, 26)
         EmployeeToolStripMenuItem.Text = "Employee"
         ' 
         ' CourierToolStripMenuItem
         ' 
         CourierToolStripMenuItem.Name = "CourierToolStripMenuItem"
-        CourierToolStripMenuItem.Size = New Size(158, 26)
+        CourierToolStripMenuItem.Size = New Size(224, 26)
         CourierToolStripMenuItem.Text = "Courier"
         ' 
         ' SeriesToolStripMenuItem
         ' 
         SeriesToolStripMenuItem.Name = "SeriesToolStripMenuItem"
-        SeriesToolStripMenuItem.Size = New Size(158, 26)
+        SeriesToolStripMenuItem.Size = New Size(224, 26)
         SeriesToolStripMenuItem.Text = "Series"
         ' 
         ' CustomerToolStripMenuItem
         ' 
         CustomerToolStripMenuItem.Name = "CustomerToolStripMenuItem"
-        CustomerToolStripMenuItem.Size = New Size(158, 26)
+        CustomerToolStripMenuItem.Size = New Size(224, 26)
         CustomerToolStripMenuItem.Text = "Customer"
         ' 
         ' BranchToolStripMenuItem
         ' 
         BranchToolStripMenuItem.Name = "BranchToolStripMenuItem"
-        BranchToolStripMenuItem.Size = New Size(158, 26)
+        BranchToolStripMenuItem.Size = New Size(224, 26)
         BranchToolStripMenuItem.Text = "Branch"
         ' 
         ' TransactionsToolStripMenuItem

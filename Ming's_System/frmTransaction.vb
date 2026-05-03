@@ -15,7 +15,6 @@ Public Class frmTransaction
     Private Const STATUS_PENDING As String = "Pending"
     Private Const STATUS_DELIVERED As String = "Delivered"
 
-    ' 1. INITIALIZE THE CONTROLLER AND THE SERVICE
     Private ctrl As New TransactionController()
     Private service As New TransactionService(ctrl)
 
@@ -170,14 +169,12 @@ Public Class frmTransaction
         chkNewProduct.Visible = False
     End Sub
 
-    ' ========================================================================
-    '  DROPDOWN LOADING (Delegated to Controller)
-    ' ========================================================================
     Private Sub LoadTransactionDropdowns()
         cboTarget.Items.Clear()
         cboProduct.DataSource = Nothing
         cboProduct.Items.Clear()
         cboCourier.Items.Clear()
+        cboSeries.Items.Clear()
         If tag1 <> TX_SALES Then cboSalesLocation.Items.Clear()
 
         Try
@@ -185,17 +182,23 @@ Public Class frmTransaction
                 Case TX_RESTOCK
                     LoadComboFromList(cboTarget, ctrl.GetSuppliers())
                     LoadProductDropdown()
+                    LoadComboFromList(cboSeries, ctrl.GetSeries())
                 Case TX_SALES
                     LoadComboFromList(cboTarget, ctrl.GetCustomers())
                     LoadProductDropdown()
+                    LoadComboFromList(cboSeries, ctrl.GetSeries())
                     LoadComboFromList(cboCourier, ctrl.GetCouriers())
                 Case TX_STORE_ASSIGN
                     LoadComboFromList(cboTarget, ctrl.GetBranches())
                     LoadProductDropdown()
+                    LoadComboFromList(cboSeries, ctrl.GetSeries())
+
                 Case TX_WORK_SCHEDULE
                     LoadComboFromList(cboTarget, ctrl.GetEmployees())
                     LoadComboFromList(cboProduct, ctrl.GetBranches())
+                    LoadComboFromList(cboSeries, ctrl.GetSeries())
                 Case TX_INTERNAL_TRANSFER
+                    LoadComboFromList(cboSeries, ctrl.GetSeries())
                     cboTarget.Items.Add(LOCATION_MAIN_WAREHOUSE)
                     cboSalesLocation.Items.Add(LOCATION_MAIN_WAREHOUSE)
                     For Each b In ctrl.GetBranches()
@@ -288,20 +291,22 @@ Public Class frmTransaction
         If isNew Then ShowNewProductFields() Else HideNewProductFields()
     End Sub
 
+    Private Sub HideNewProductFields()
+        lblNewBuyPrice.Text = "Current Price:" : txtNewBuyPrice.ReadOnly = True
+        lblNewStockCount.Text = "Current Stock:" : txtNewStockCount.ReadOnly = True
+        HideProductPriceAndStock()
+
+        SetVisible(False, lblNewSellPrice, txtNewSellPrice, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus, lblSeries, cboSeries)
+    End Sub
     Private Sub ShowNewProductFields()
         lblNewBuyPrice.Text = "Buying Price:" : txtNewBuyPrice.ReadOnly = False
         lblNewStockCount.Text = "Initial Stock:" : txtNewStockCount.ReadOnly = False
         SetVisible(True, lblNewBuyPrice, txtNewBuyPrice, lblNewStockCount, txtNewStockCount, lblNewSellPrice, txtNewSellPrice)
         Dim isWorkSchedule = (tag1 = TX_WORK_SCHEDULE)
-        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus)
-        ClearNewProductInputs()
-    End Sub
 
-    Private Sub HideNewProductFields()
-        lblNewBuyPrice.Text = "Current Price:" : txtNewBuyPrice.ReadOnly = True
-        lblNewStockCount.Text = "Current Stock:" : txtNewStockCount.ReadOnly = True
-        HideProductPriceAndStock()
-        SetVisible(False, lblNewSellPrice, txtNewSellPrice, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus)
+        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus, lblSeries, cboSeries)
+
+        ClearNewProductInputs()
     End Sub
 
     ' ========================================================================
@@ -356,7 +361,8 @@ Public Class frmTransaction
             .Color = txtNewColor.Text.Trim(),
             .Size = txtNewSize.Text.Trim(),
             .Status = cboNewStatus.Text.Trim(),
-            .InitialStock = CInt(Val(txtNewStockCount.Text))
+            .InitialStock = CInt(Val(txtNewStockCount.Text)),
+            .Series = cboSeries.Text.Trim()
         }
     End Function
     Private Sub btnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
@@ -377,8 +383,39 @@ Public Class frmTransaction
         }
 
         Dim res = service.ProcessRestock(req)
-        If Not res.Success Then ShowWarning(res.Message, "Restock Error")
-        Return res.Success
+
+        If Not res.Success Then
+
+            If res.Message = "DUPLICATE_FOUND" Then
+
+                Dim prompt As String = "Wait! This exact product already exists in the database." & vbCrLf & "Do you want to just add this stock to the existing inventory instead?"
+                Dim answer = MsgBox(prompt, MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Duplicate Found")
+
+                If answer = MsgBoxResult.Yes Then
+                    Dim existingId As Integer = Convert.ToInt32(res.Receipt)
+
+
+                    Dim mergeRes = service.MergeDuplicateStock(existingId, req.Quantity)
+
+                    If mergeRes.Success Then
+                        MsgBox(mergeRes.Message, MsgBoxStyle.Information, "Stock Merged")
+                        Return True
+                    Else
+                        ShowWarning(mergeRes.Message, "Merge Error")
+                        Return False
+                    End If
+                Else
+
+                    Return False
+                End If
+            Else
+
+                ShowWarning(res.Message, "Restock Error")
+                Return False
+            End If
+        End If
+
+        Return True
     End Function
 
     Private Function ProcessSales() As Boolean
@@ -531,6 +568,7 @@ Public Class frmTransaction
         txtNewSize.Clear()
         txtNewStockCount.Clear()
         cboNewStatus.SelectedIndex = -1
+        cboSeries.SelectedIndex = -1
     End Sub
 
     Private Sub ShowError(message As String)
@@ -540,5 +578,6 @@ Public Class frmTransaction
     Private Sub ShowWarning(message As String, title As String)
         MsgBox(message, MsgBoxStyle.Exclamation, title)
     End Sub
+
 
 End Class

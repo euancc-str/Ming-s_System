@@ -125,8 +125,8 @@
 
     Private Sub ProductTransferToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ProductTransferToolStripMenuItem.Click
         CloseActiveWindows()
-        tag1 = 7
-        frmTransaction.MdiParent = Me
-        frmTransaction.Show()
+        choice = 9
+        MainPanel.MdiParent = Me
+        MainPanel.Show()
     End Sub
 End Class

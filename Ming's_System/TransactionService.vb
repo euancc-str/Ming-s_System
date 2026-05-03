@@ -29,8 +29,8 @@ Public Class TransactionService
         Public SellPrice As Decimal
         Public Status As String
         Public InitialStock As Integer
+        Public Series As String
     End Class
-
     Public Class SupplierInfo
         Public IsNew As Boolean
         Public Name As String
@@ -105,19 +105,24 @@ Public Class TransactionService
         Public EndTime As String
     End Class
 
-    ' ========================================================================
-    '  THE TRANSACTION ENGINES
-    ' ========================================================================
-
     Public Function ProcessRestock(req As RestockRequest) As ServiceResult
         If req.Quantity <= 0 Then Return New ServiceResult(False, "Invalid quantity.")
         If req.Supplier.IsNew AndAlso req.Supplier.Name = "" Then Return New ServiceResult(False, "Enter Supplier Name.")
         If req.Product.IsNew AndAlso req.Product.SellPrice <= req.Product.BuyPrice Then Return New ServiceResult(False, "Sell price must be > Buy price.")
 
+        If req.Product.IsNew Then
+            Dim existingId = _repo.checkProductExists(req.Product.Name, req.Product.Color, req.Product.Size)
+            If existingId > 0 Then
+                ' We found a duplicate! We return False, but we send a secret flag "DUPLICATE_FOUND"
+                ' We hide the existingId inside the "Receipt" string so the form knows which product to update!
+                Return New ServiceResult(False, "DUPLICATE_FOUND", existingId.ToString())
+            End If
+        End If
+
         Dim suppId = If(req.Supplier.IsNew, _repo.ResolveSupplier(req.Supplier.Name, req.Supplier.ContactPerson, req.Supplier.CountryOrigin), _repo.GetExistingSupplierId(req.Supplier.Name))
         If suppId = -1 Then Return New ServiceResult(False, "Supplier not found.")
-
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock), req.Product.Id)
+        ' Update it so it looks like this in all 3 functions:
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim finalBuyPrice = If(req.Product.IsNew, req.Product.BuyPrice, _repo.GetBuyingPrice(prodId))
@@ -143,8 +148,8 @@ Public Class TransactionService
 
         Dim custId = If(req.Customer.IsNew, _repo.ResolveCustomer(req.Customer.Name, req.Customer.Address), _repo.GetExistingCustomerId(req.Customer.Name))
         If custId = -1 Then Return New ServiceResult(False, "Customer not found.")
-
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock), req.Product.Id)
+        ' Update it so it looks like this in all 3 functions:
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim currentStock = If(req.SalesLocation = "Main Warehouse", _repo.GetWarehouseStock(prodId), _repo.GetBranchStock(prodId, req.SalesLocation))
@@ -172,7 +177,7 @@ Public Class TransactionService
         Dim branchId = If(req.Branch.IsNew, _repo.ResolveBranch(req.Branch.Name, req.Branch.Address, req.Branch.OperatingHours), _repo.GetExistingBranchId(req.Branch.Name))
         If branchId = -1 Then Return New ServiceResult(False, "Branch not found.")
 
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock), req.Product.Id)
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim warehouseStock = _repo.GetWarehouseStock(prodId)
@@ -223,4 +228,53 @@ Public Class TransactionService
         End Try
     End Function
 
+    Public Function MergeDuplicateStock(productId As Integer, quantity As Integer) As ServiceResult
+        Try
+            _repo.AddStockOnly(productId, quantity)
+            Return New ServiceResult(True, "Stock added to existing product successfully!")
+        Catch ex As Exception
+            Return New ServiceResult(False, "Failed to merge stock: " & ex.Message)
+        End Try
+    End Function
+
+    Public Class BatchTransferRequest
+        Public SourceLocation As String
+        Public DestLocation As String
+        Public TransferDate As String
+        Public CartItems As New List(Of TransactionController.BatchTransferItem)
+    End Class
+
+    Public Function ProcessBatchTransfer(req As BatchTransferRequest) As ServiceResult
+        If req.CartItems.Count = 0 Then Return New ServiceResult(False, "The transfer list is empty.")
+        If req.SourceLocation = "" OrElse req.DestLocation = "" Then Return New ServiceResult(False, "Select Source and Destination.")
+        If req.SourceLocation = req.DestLocation Then Return New ServiceResult(False, "Source and Destination cannot be the same.")
+
+        ' Verify stock for every item in the cart
+        For Each item In req.CartItems
+            Dim currentStock = If(req.SourceLocation = "Main Warehouse", _repo.GetWarehouseStock(item.ProductId), _repo.GetBranchStock(item.ProductId, req.SourceLocation))
+            If currentStock < item.Quantity Then
+                Return New ServiceResult(False, $"Insufficient stock for Product ID {item.ProductId}. Available: {currentStock}")
+            End If
+        Next
+
+        Try
+            _repo.ProcessBatchTransfer(req.CartItems, req.SourceLocation, req.DestLocation, req.TransferDate)
+            Return New ServiceResult(True, "Batch transfer successful!")
+        Catch ex As Exception
+            Return New ServiceResult(False, "Batch transfer failed: " & ex.Message)
+        End Try
+    End Function
+
+    Public Function ProcessBulkRetrieval(branchName As String) As ServiceResult
+        If String.IsNullOrWhiteSpace(branchName) OrElse branchName = "Select Branch..." Then
+            Return New ServiceResult(False, "Please select a valid branch for retrieval.")
+        End If
+
+        Try
+            _repo.BulkRetrieveFromBranch(branchName)
+            Return New ServiceResult(True, $"Successfully retrieved all items from {branchName} to Main Warehouse.")
+        Catch ex As Exception
+            Return New ServiceResult(False, ex.Message)
+        End Try
+    End Function
 End Class

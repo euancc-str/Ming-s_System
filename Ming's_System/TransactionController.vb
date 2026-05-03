@@ -51,9 +51,6 @@ Public Class TransactionController
             "ORDER BY p.item_name")
     End Function
 
-    ' ========================================================================
-    '  ID & VALUE RESOLVERS (Used by the Service)
-    ' ========================================================================
 
     Public Function GetBuyingPrice(productId As Integer) As Decimal
         readquery($"SELECT buying_price FROM product WHERE product_id = {productId}")
@@ -111,18 +108,59 @@ Public Class TransactionController
         Return GetId("SELECT employee_id FROM employee WHERE employee_name = '" & employeeName & "'", "employee_id")
     End Function
 
-    Public Function ResolveProduct(itemName As String, color As String, size As String, buyingPrice As Decimal, sellingPrice As Decimal, status As String, initialStock As Integer) As Integer
-        readquery($"SELECT product_id FROM product WHERE item_name = '{itemName}' AND color = '{color}' AND size = '{size}'")
-        If Not cmdread.HasRows Then
-            readquery($"INSERT INTO product (item_name, buying_price, selling_price, color, size, status, stock_count) " &
-                      $"VALUES ('{itemName}', {buyingPrice}, {sellingPrice}, '{color}', '{size}', '{status}', {initialStock})")
+    Public Function ResolveProduct(itemName As String, color As String, size As String, buyingPrice As Decimal, sellingPrice As Decimal, status As String, initialStock As Integer, seriesName As String) As Integer
+
+        ' Safely build the Series subquery (defaults to NULL if they leave it blank)
+        Dim seriesIdSql = "NULL"
+        If Not String.IsNullOrWhiteSpace(seriesName) AndAlso seriesName <> "None" Then
+            seriesIdSql = $"(SELECT series_id FROM series WHERE series_name = '{seriesName}')"
         End If
+
+        readquery($"SELECT product_id FROM product WHERE item_name = '{itemName}' AND color = '{color}' AND size = '{size}'")
+
+        If Not cmdread.HasRows Then
+            readquery($"INSERT INTO product (item_name, buying_price, selling_price, color, size, status, stock_count, series_id) " &
+                      $"VALUES ('{itemName}', {buyingPrice}, {sellingPrice}, '{color}', '{size}', '{status}', {initialStock}, {seriesIdSql})")
+        End If
+
         Return GetId($"SELECT product_id FROM product WHERE item_name='{itemName}' AND color='{color}' AND size='{size}'", "product_id")
     End Function
+    ' A simple box to hold the items in our cart
+    Public Structure BatchTransferItem
+        Public ProductId As Integer
+        Public Quantity As Integer
+    End Structure
 
-    ' ========================================================================
-    '  INVENTORY STOCK CHECKERS
-    ' ========================================================================
+    ' The engine that processes the whole cart at once
+    Public Function ProcessBatchTransfer(items As List(Of BatchTransferItem), sourceLocation As String, destLocation As String, transferDate As String) As Boolean
+        Try
+            readquery("START TRANSACTION")
+
+            For Each item In items
+                ' 1. Deduct from Source
+                DeductStock(item.ProductId, item.Quantity, sourceLocation)
+
+                ' 2. Add to Destination
+                If destLocation = "Main Warehouse" Then
+                    readquery($"UPDATE product SET stock_count = stock_count + {item.Quantity} WHERE product_id = {item.ProductId}")
+                Else
+                    readquery(
+                        $"INSERT INTO stores (branch_id, product_id, quantity, last_restocked_date) " &
+                        $"VALUES ((SELECT branch_id FROM branch WHERE branch_name = '{destLocation}'), " &
+                        $"{item.ProductId}, {item.Quantity}, '{transferDate}') " &
+                        "ON DUPLICATE KEY UPDATE " &
+                        "  quantity = quantity + VALUES(quantity), " &
+                        "  last_restocked_date = VALUES(last_restocked_date)")
+                End If
+            Next
+
+            readquery("COMMIT")
+            Return True
+        Catch ex As Exception
+            readquery("ROLLBACK")
+            Throw New Exception(ex.Message)
+        End Try
+    End Function
 
     Public Structure ProductDetail
         Public Price As Decimal
@@ -214,9 +252,6 @@ Public Class TransactionController
         Return cmdread.HasRows
     End Function
 
-    ' ========================================================================
-    '  TRANSACTION VAULTS (The heavy lifters)
-    ' ========================================================================
 
     Public Function ProcessRestock(supplierId As Integer, productId As Integer, quantity As Integer, supplyDate As String, buyingPrice As Decimal) As Boolean
         Try
@@ -335,9 +370,6 @@ Public Class TransactionController
             "  shipping_fee = VALUES(shipping_fee)")
     End Sub
 
-    ' ========================================================================
-    '  UTILITY FUNCTIONS
-    ' ========================================================================
     Private Function GetId(sql As String, columnName As String) As Integer
         readquery(sql)
         If cmdread.HasRows AndAlso cmdread.Read() Then
@@ -364,4 +396,39 @@ Public Class TransactionController
         Return dt
     End Function
 
+    Public Function checkProductExists(itemName As String, color As String, size As String) As Integer
+        Return GetId($"SELECT product_id FROM product WHERE item_name = '{itemName}' AND color = '{color}' AND size = '{size}'", "product_id")
+    End Function
+
+    Public Sub AddStockOnly(productId As Integer, qty As Integer)
+        readquery($"UPDATE product SET stock_count = stock_count + {qty} WHERE product_id = {productId}")
+    End Sub
+    Public Function GetSeries() As List(Of String)
+        Return ReadToList("SELECT series_name FROM series ORDER BY series_name", "series_name")
+    End Function
+    Public Function BulkRetrieveFromBranch(branchName As String) As Boolean
+        Try
+            readquery("START TRANSACTION")
+
+            ' 1. Move all quantities from 'stores' back to 'product' table stock_count
+            Dim sqlSweep = "UPDATE product p " &
+                           "INNER JOIN stores s ON p.product_id = s.product_id " &
+                           "INNER JOIN branch b ON s.branch_id = b.branch_id " &
+                           $"SET p.stock_count = p.stock_count + s.quantity " &
+                           $"WHERE b.branch_name = '{branchName}'"
+            readquery(sqlSweep)
+
+            ' 2. "Delete" the items from the branch (Retrieval)
+            Dim sqlClear = "DELETE s FROM stores s " &
+                           "INNER JOIN branch b ON s.branch_id = b.branch_id " &
+                           $"WHERE b.branch_name = '{branchName}'"
+            readquery(sqlClear)
+
+            readquery("COMMIT")
+            Return True
+        Catch ex As Exception
+            readquery("ROLLBACK")
+            Throw New Exception("Bulk sweep failed: " & ex.Message)
+        End Try
+    End Function
 End Class

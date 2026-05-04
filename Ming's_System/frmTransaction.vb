@@ -352,12 +352,23 @@ Public Class frmTransaction
     End Sub
 
     Private Function GetProductInfoFromUI() As TransactionService.ProductInfo
+        Dim isNewProd = chkNewProduct.Checked
+
+
+        Dim actualSellPrice As Double
+        If isNewProd Then
+            actualSellPrice = ParseDecimal(txtNewSellPrice.Text)
+        Else
+
+            actualSellPrice = ParseDecimal(txtNewBuyPrice.Text)
+        End If
+
         Return New TransactionService.ProductInfo() With {
-            .IsNew = chkNewProduct.Checked,
-            .Id = If(chkNewProduct.Checked, -1, Convert.ToInt32(cboProduct.SelectedValue)),
-            .Name = If(chkNewProduct.Checked, txtNewItemName.Text.Trim(), cboProduct.Text.Trim()),
+            .IsNew = isNewProd,
+            .Id = If(isNewProd, -1, Convert.ToInt32(cboProduct.SelectedValue)),
+            .Name = If(isNewProd, txtNewItemName.Text.Trim(), cboProduct.Text.Trim()),
             .BuyPrice = ParseDecimal(txtNewBuyPrice.Text),
-            .SellPrice = ParseDecimal(txtNewSellPrice.Text),
+            .SellPrice = actualSellPrice,
             .Color = txtNewColor.Text.Trim(),
             .Size = txtNewSize.Text.Trim(),
             .Status = cboNewStatus.Text.Trim(),

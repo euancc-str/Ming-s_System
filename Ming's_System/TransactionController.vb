@@ -125,22 +125,21 @@ Public Class TransactionController
 
         Return GetId($"SELECT product_id FROM product WHERE item_name='{itemName}' AND color='{color}' AND size='{size}'", "product_id")
     End Function
-    ' A simple box to hold the items in our cart
+
     Public Structure BatchTransferItem
         Public ProductId As Integer
         Public Quantity As Integer
     End Structure
 
-    ' The engine that processes the whole cart at once
+
     Public Function ProcessBatchTransfer(items As List(Of BatchTransferItem), sourceLocation As String, destLocation As String, transferDate As String) As Boolean
         Try
             readquery("START TRANSACTION")
 
             For Each item In items
-                ' 1. Deduct from Source
+
                 DeductStock(item.ProductId, item.Quantity, sourceLocation)
 
-                ' 2. Add to Destination
                 If destLocation = "Main Warehouse" Then
                     readquery($"UPDATE product SET stock_count = stock_count + {item.Quantity} WHERE product_id = {item.ProductId}")
                 Else

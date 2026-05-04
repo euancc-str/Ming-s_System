@@ -40,7 +40,6 @@ Partial Class Form1
         ViewReportsToolStripMenuItem = New ToolStripMenuItem()
         OperationsToolStripMenuItem = New ToolStripMenuItem()
         OrderManagerToolStripMenuItem = New ToolStripMenuItem()
-        ProductTransferToolStripMenuItem = New ToolStripMenuItem()
         MenuStrip1.SuspendLayout()
         SuspendLayout()
         ' 
@@ -64,43 +63,43 @@ Partial Class Form1
         ' ProductToolStripMenuItem1
         ' 
         ProductToolStripMenuItem1.Name = "ProductToolStripMenuItem1"
-        ProductToolStripMenuItem1.Size = New Size(224, 26)
+        ProductToolStripMenuItem1.Size = New Size(158, 26)
         ProductToolStripMenuItem1.Text = "Product"
         ' 
         ' SupplierToolStripMenuItem
         ' 
         SupplierToolStripMenuItem.Name = "SupplierToolStripMenuItem"
-        SupplierToolStripMenuItem.Size = New Size(224, 26)
+        SupplierToolStripMenuItem.Size = New Size(158, 26)
         SupplierToolStripMenuItem.Text = "Supplier"
         ' 
         ' EmployeeToolStripMenuItem
         ' 
         EmployeeToolStripMenuItem.Name = "EmployeeToolStripMenuItem"
-        EmployeeToolStripMenuItem.Size = New Size(224, 26)
+        EmployeeToolStripMenuItem.Size = New Size(158, 26)
         EmployeeToolStripMenuItem.Text = "Employee"
         ' 
         ' CourierToolStripMenuItem
         ' 
         CourierToolStripMenuItem.Name = "CourierToolStripMenuItem"
-        CourierToolStripMenuItem.Size = New Size(224, 26)
+        CourierToolStripMenuItem.Size = New Size(158, 26)
         CourierToolStripMenuItem.Text = "Courier"
         ' 
         ' SeriesToolStripMenuItem
         ' 
         SeriesToolStripMenuItem.Name = "SeriesToolStripMenuItem"
-        SeriesToolStripMenuItem.Size = New Size(224, 26)
+        SeriesToolStripMenuItem.Size = New Size(158, 26)
         SeriesToolStripMenuItem.Text = "Series"
         ' 
         ' CustomerToolStripMenuItem
         ' 
         CustomerToolStripMenuItem.Name = "CustomerToolStripMenuItem"
-        CustomerToolStripMenuItem.Size = New Size(224, 26)
+        CustomerToolStripMenuItem.Size = New Size(158, 26)
         CustomerToolStripMenuItem.Text = "Customer"
         ' 
         ' BranchToolStripMenuItem
         ' 
         BranchToolStripMenuItem.Name = "BranchToolStripMenuItem"
-        BranchToolStripMenuItem.Size = New Size(224, 26)
+        BranchToolStripMenuItem.Size = New Size(158, 26)
         BranchToolStripMenuItem.Text = "Branch"
         ' 
         ' TransactionsToolStripMenuItem
@@ -142,7 +141,7 @@ Partial Class Form1
         ' 
         ' OperationsToolStripMenuItem
         ' 
-        OperationsToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {OrderManagerToolStripMenuItem, ProductTransferToolStripMenuItem})
+        OperationsToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {OrderManagerToolStripMenuItem})
         OperationsToolStripMenuItem.Name = "OperationsToolStripMenuItem"
         OperationsToolStripMenuItem.Size = New Size(96, 24)
         OperationsToolStripMenuItem.Text = "Operations"
@@ -152,12 +151,6 @@ Partial Class Form1
         OrderManagerToolStripMenuItem.Name = "OrderManagerToolStripMenuItem"
         OrderManagerToolStripMenuItem.Size = New Size(224, 26)
         OrderManagerToolStripMenuItem.Text = "Order Manager"
-        ' 
-        ' ProductTransferToolStripMenuItem
-        ' 
-        ProductTransferToolStripMenuItem.Name = "ProductTransferToolStripMenuItem"
-        ProductTransferToolStripMenuItem.Size = New Size(224, 26)
-        ProductTransferToolStripMenuItem.Text = "Product Transfer"
         ' 
         ' Form1
         ' 
@@ -193,6 +186,5 @@ Partial Class Form1
     Friend WithEvents BranchToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OperationsToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OrderManagerToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ProductTransferToolStripMenuItem As ToolStripMenuItem
 
 End Class

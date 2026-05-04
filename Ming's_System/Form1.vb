@@ -123,7 +123,7 @@
         MainPanel.Show()
     End Sub
 
-    Private Sub ProductTransferToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ProductTransferToolStripMenuItem.Click
+    Private Sub ProductTransferToolStripMenuItem_Click(sender As Object, e As EventArgs)
         CloseActiveWindows()
         choice = 9
         MainPanel.MdiParent = Me

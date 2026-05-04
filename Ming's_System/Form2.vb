@@ -383,6 +383,8 @@ Public Class MainPanel
                                          " AND pu.reservation_date = '" & currentOrderDate & "'"
             readquery(checkFinance)
 
+            Dim grandTotal As Double = 0
+
             If cmdread.HasRows Then
                 cmdread.Read()
                 Dim dp As Double = Val(cmdread("down_payment").ToString())
@@ -390,31 +392,37 @@ Public Class MainPanel
                 Dim qty As Integer = Val(cmdread("quantity").ToString())
                 Dim sp As Double = Val(cmdread("selling_price").ToString())
 
-                Dim grandTotal As Double = (sp * qty) + sf
+                grandTotal = (sp * qty) + sf
 
                 If dp < grandTotal Then
                     Dim overrideAns = MsgBox("WARNING: This order has an unpaid balance!" & vbCrLf &
-                           "System Paid: ₱" & dp & vbCrLf & "Grand Total: ₱" & grandTotal & vbCrLf & vbCrLf &
-                           "Did the customer pay the remaining balance directly? Click YES to override and force delivery.", MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Balance Due Warning")
+                                             "System Paid: P" & dp & vbCrLf & "Grand Total: P" & grandTotal & vbCrLf &
+                                             "Did the customer pay the remaining balance? Click YES to mark as fully paid and deliver.",
+                                             MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Balance Due")
 
-
-                    If overrideAns = MsgBoxResult.No Then
-                        Return
-                    End If
+                    ' If they didn't pay, stop the delivery!
+                    If overrideAns = MsgBoxResult.No Then Return
                 End If
             End If
 
             If MsgBox("Confirm marking this order as Delivered?", MsgBoxStyle.YesNo + MsgBoxStyle.Question) = MsgBoxResult.Yes Then
-                readquery("UPDATE purchases SET status = 'Delivered' WHERE customer_id = " & currentCustID &
-                          " AND product_id = " & currentProdID & " AND reservation_date = '" & currentOrderDate & "'")
-                MsgBox("Order fulfilled!")
-                LoadGridData() : btnClear.PerformClick()
+
+                ' THE FIX: We update the status AND force the down_payment to equal the grandTotal!
+                Dim updateSql As String = "UPDATE purchases SET status = 'Delivered', down_payment = " & grandTotal &
+                                          " WHERE customer_id = " & currentCustID &
+                                          " AND product_id = " & currentProdID &
+                                          " AND reservation_date = '" & currentOrderDate & "'"
+
+                readquery(updateSql)
+
+                MsgBox("Order fulfilled and marked as Fully Paid!", MsgBoxStyle.Information)
+                LoadGridData()
+                btnClear.PerformClick()
             End If
         Catch ex As Exception
-            MsgBox("Error updating order: " & ex.Message)
+            MsgBox("Error updating order: " & ex.Message, MsgBoxStyle.Critical)
         End Try
     End Sub
-
 
 
     Private Function handleDuplicateProduct() As Boolean
@@ -540,24 +548,7 @@ Public Class MainPanel
         btnDelete.Enabled = False
         btnSave.Text = If(choice = 8, "✔ Mark Delivered", "Save Record")
         If choice = 8 Then btnSave.Enabled = False
-        If choice = 9 Then
-            Dim ans = MsgBox($"Are you sure you want to retrieve ALL stock from {cboReport.Text} back to the Main Warehouse?",
-                             MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Confirm Bulk Action")
 
-            If ans = MsgBoxResult.Yes Then
-                Dim res = service.ProcessBulkRetrieval(cboReport.Text.Trim)
-                If res.Success Then
-                    MsgBox(res.Message, MsgBoxStyle.Information)
-
-                    LoadGridData()
-                    dgvReport.DataSource = Nothing
-                    cboReport.Text = "Select Branch to Empty..."
-                Else
-                    MsgBox(res.Message, MsgBoxStyle.Critical)
-                End If
-            End If
-            Return
-        End If
     End Sub
 
     Private Sub btnDelete_Click(sender As Object, e As EventArgs) Handles btnDelete.Click
@@ -795,9 +786,18 @@ Public Class MainPanel
 
         Select Case TabControl1.SelectedIndex
             Case 0
-
+                choice = 1
+                Form2_Load(Nothing, Nothing)
             Case 1
+                choice = 9
+                cboBranchSweep.Items.Clear()
+                readquery("SELECT branch_name FROM branch ORDER BY branch_name")
+                While cmdread.HasRows AndAlso cmdread.Read()
+                    cboBranchSweep.Items.Add(cmdread("branch_name").ToString())
+                End While
+                cboBranchSweep.Text = "Select a Branch..."
 
+                If dgvBranchInventory IsNot Nothing Then dgvBranchInventory.DataSource = Nothing
             Case 2
 
                 LoadCustomer360Data("")
@@ -810,11 +810,9 @@ Public Class MainPanel
                 LoadAdminData("")
         End Select
 
-
-        If btnClear IsNot Nothing Then btnClear.PerformClick()
-
-
-        Form2_Load(Nothing, Nothing)
+        If choice <> 9 AndAlso btnClear IsNot Nothing Then
+            btnClear.PerformClick()
+        End If
     End Sub
 
     Private Sub LoadCustomer360Data(searchTerm As String)

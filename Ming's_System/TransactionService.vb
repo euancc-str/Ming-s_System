@@ -15,10 +15,6 @@ Public Class TransactionService
             Success = s : Message = m : Receipt = r
         End Sub
     End Class
-
-    ' ========================================================================
-    '  THE DATA CONTAINERS (Clean & Grouped)
-    ' ========================================================================
     Public Class ProductInfo
         Public IsNew As Boolean
         Public Id As Integer
@@ -58,9 +54,6 @@ Public Class TransactionService
         Public Email As String
     End Class
 
-    ' ========================================================================
-    '  THE SPECIFIC TRANSACTION REQUESTS
-    ' ========================================================================
     Public Class RestockRequest
         Public Supplier As SupplierInfo
         Public Product As ProductInfo
@@ -113,15 +106,13 @@ Public Class TransactionService
         If req.Product.IsNew Then
             Dim existingId = _repo.checkProductExists(req.Product.Name, req.Product.Color, req.Product.Size)
             If existingId > 0 Then
-                ' We found a duplicate! We return False, but we send a secret flag "DUPLICATE_FOUND"
-                ' We hide the existingId inside the "Receipt" string so the form knows which product to update!
                 Return New ServiceResult(False, "DUPLICATE_FOUND", existingId.ToString())
             End If
         End If
 
         Dim suppId = If(req.Supplier.IsNew, _repo.ResolveSupplier(req.Supplier.Name, req.Supplier.ContactPerson, req.Supplier.CountryOrigin), _repo.GetExistingSupplierId(req.Supplier.Name))
         If suppId = -1 Then Return New ServiceResult(False, "Supplier not found.")
-        ' Update it so it looks like this in all 3 functions:
+
         Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
@@ -141,14 +132,15 @@ Public Class TransactionService
 
         Dim grandTotal = (req.Product.SellPrice * req.Quantity) + req.ShippingFee
         If req.DownPayment < 0 OrElse req.DownPayment > grandTotal Then Return New ServiceResult(False, "Invalid payment amount.")
-        If req.OrderStatus = "Delivered" AndAlso req.DownPayment < grandTotal Then req.OrderStatus = "Pending"
-
+        If req.OrderStatus = "Delivered" AndAlso req.DownPayment < CDec(grandTotal) Then
+            req.DownPayment = CDec(grandTotal)
+        End If
         If req.IsCourier AndAlso req.CourierName = "" Then Return New ServiceResult(False, "Select Courier.")
         If req.Product.IsNew AndAlso req.Product.SellPrice <= req.Product.BuyPrice Then Return New ServiceResult(False, "Sell price must be > Buy price.")
 
         Dim custId = If(req.Customer.IsNew, _repo.ResolveCustomer(req.Customer.Name, req.Customer.Address), _repo.GetExistingCustomerId(req.Customer.Name))
         If custId = -1 Then Return New ServiceResult(False, "Customer not found.")
-        ' Update it so it looks like this in all 3 functions:
+
         Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 

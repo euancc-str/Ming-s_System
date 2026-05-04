@@ -848,7 +848,6 @@ Public Class MainPanel
             dgvPurchases.DataSource = getDataTable(sqlPurchases)
             dgvPurchases.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
-            ' Clear default selections so it looks clean
             dgvCust.ClearSelection()
             dgvDelivers.ClearSelection()
             dgvPurchases.ClearSelection()
@@ -1014,5 +1013,114 @@ Public Class MainPanel
     End Sub
     Private Sub dgvBranches_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvBranches.CellContentClick
 
+    End Sub
+
+    Private Sub TabPage6_Click(sender As Object, e As EventArgs) Handles TabPage6.Click
+
+    End Sub
+
+    Private Sub btnFullBackup_Click(sender As Object, e As EventArgs) Handles btnFullBackup.Click
+        Dim ask = MsgBox("Are you sure you want to perform a full backup of the database? This may take a while.",
+                         MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Confirm Backup")
+        If ask = MsgBoxResult.Yes Then
+            Dim sfd As New SaveFileDialog
+            sfd.Filter = "SQL DB Backup (*.sql)|*.sql"
+            sfd.FileName = "MingsCraft_FullBackup_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".sql"
+            sfd.Title = "Save sql backup"
+            If sfd.ShowDialog = DialogResult.OK Then
+                Try
+                    Dim mysqlDumpPath As String = "C:\xampp\mysql\bin\mysqldump.exe"
+                    Dim arguments As String = $"-u root mings_craft --result-file=""{sfd.FileName}"""
+                    Dim proc As New Process()
+                    proc.StartInfo.FileName = mysqlDumpPath
+                    proc.StartInfo.Arguments = arguments
+                    proc.StartInfo.UseShellExecute = False
+                    proc.StartInfo.CreateNoWindow = True
+                    proc.Start()
+                    proc.WaitForExit()
+                    MsgBox("SQL Backup Complete! File saved to: " & vbCrLf & sfd.FileName, MsgBoxStyle.Information, "Success")
+                Catch ex As Exception
+                    MsgBox("Backup Error. Make sure XAMPP/MySQL path is correct. Details: " & ex.Message, MsgBoxStyle.Critical)
+                End Try
+            End If
+        End If
+    End Sub
+    Private Sub btnFullRecover_Click(sender As Object, e As EventArgs) Handles btnFullRecover.Click
+        Dim warn = MsgBox("Are you sure you want to perform a full recovery of the database? This will overwrite existing data.", MsgBoxStyle.YesNo + MsgBoxStyle.Critical, "Confirm Recovery")
+        If warn = MsgBoxResult.Yes Then
+            Dim ofd As New OpenFileDialog
+            ofd.Filter = "SQL DB Backup (*.sql)|*.sql"
+            ofd.Title = "Select sql backup to recover"
+            If ofd.ShowDialog = DialogResult.OK Then
+                Try
+                    Dim mysqlPath As String = "C:\xampp\mysql\bin\mysql.exe"
+                    Dim arguments As String = $"-u root mings_craft -e ""source {ofd.FileName.Replace("\", "/")}"""
+                    Dim proc As New Process
+                    proc.StartInfo.FileName = mysqlPath
+                    proc.StartInfo.Arguments = arguments
+                    proc.StartInfo.UseShellExecute = False
+                    proc.StartInfo.CreateNoWindow = True
+                    proc.Start()
+                    proc.WaitForExit()
+                    MsgBox("System Recovery Successful! The SQL database was perfectly restored.", MsgBoxStyle.Information, "Recovery Complete")
+                    LoadAdminData("")
+                Catch ex As Exception
+
+                End Try
+            End If
+        End If
+    End Sub
+
+    Private Sub btnExportCSV_Click(sender As Object, e As EventArgs) Handles btnExportCSV.Click
+        Dim filePrefix As String = "Mings_Craft_Data"
+        Select Case choice
+            Case 1 : filePrefix = "Products_Inventory"
+            Case 2 : filePrefix = "Suppliers_List"
+            Case 3 : filePrefix = "Customers_List"
+            Case 4 : filePrefix = "Employee_Directory"
+            Case 5 : filePrefix = "Couriers_List"
+            Case 6 : filePrefix = "Series_List"
+            Case 7 : filePrefix = "Branch_Locations"
+            Case 8 : filePrefix = "Order_Manager"
+        End Select
+
+        Dim signatory As String = InputBox("Enter your name for the export signature:", "Official Report Signatory", "Jonaz")
+        If signatory.Trim = "" Then
+            MsgBox("Export cancelled. A valid name is required for the export signature.", MsgBoxStyle.Exclamation)
+            Return
+        End If
+        ExportGridToCSV(dgvData, filePrefix, signatory)
+    End Sub
+    Public Sub exportgridtocsv(dgv As DataGridView, filePrefix As String, signatoryName As String)
+        If dgv.Rows.Count = 0 OrElse (dgv.Rows.Count = 1 AndAlso dgv.Rows(0).IsNewRow) Then
+            MsgBox("There is no data to export!", MsgBoxStyle.Exclamation)
+            Return
+        End If
+        Dim sfd As New SaveFileDialog
+        sfd.Filter = "CSV files (*.csv)|*.csv"
+        sfd.Title = "Save CSV Export"
+        sfd.FileName = filePrefix & "_" & DateTime.Now.ToString("yyyy-MM-dd") & ".csv"
+        If sfd.ShowDialog = DialogResult.OK Then
+            Try
+                Using sw As New System.IO.StreamWriter(sfd.FileName)
+                    Dim headers = dgv.Columns.Cast(Of DataGridViewColumn)().Select(Function(c) """" & c.HeaderText & """").ToArray()
+                    sw.WriteLine(String.Join(",", headers))
+
+                    For Each row As DataGridViewRow In dgv.Rows
+                        If Not row.IsNewRow Then
+                            Dim cells = row.Cells.Cast(Of DataGridViewCell)().Select(Function(c) If(c.Value IsNot Nothing, """" & c.Value.ToString().Replace("""", """""") & """", """""")).ToArray()
+                            sw.WriteLine(String.Join(",", cells))
+                        End If
+                    Next
+                    sw.WriteLine()
+                    sw.WriteLine(""""",""*** OFFICIAL SYSTEM REPORT ***""")
+                    sw.WriteLine(""""",""PREPARED BY: "",""" & signatoryName.ToUpper() & """")
+                    sw.WriteLine(""""",""DATE GENERATED: "",""" & DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt") & """")
+                End Using
+                MsgBox("Report exported successfully!" & vbCrLf & "Saved to: " & sfd.FileName, MsgBoxStyle.Information, "Export Complete")
+            Catch ex As Exception
+                MsgBox("Error creating report: " & ex.Message, MsgBoxStyle.Critical)
+            End Try
+        End If
     End Sub
 End Class

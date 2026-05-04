@@ -76,6 +76,10 @@ Partial Class MainPanel
         txtAdminSearch = New TextBox()
         dgvBranches = New DataGridView()
         Label7 = New Label()
+        TabPage6 = New TabPage()
+        btnFullRecover = New Button()
+        btnFullBackup = New Button()
+        btnExportCSV = New Button()
         TabControl1.SuspendLayout()
         TabPage1.SuspendLayout()
         CType(dgvData, ComponentModel.ISupportInitialize).BeginInit()
@@ -93,6 +97,7 @@ Partial Class MainPanel
         CType(dgvStaffAssignments, ComponentModel.ISupportInitialize).BeginInit()
         CType(dgvEmployees, ComponentModel.ISupportInitialize).BeginInit()
         CType(dgvBranches, ComponentModel.ISupportInitialize).BeginInit()
+        TabPage6.SuspendLayout()
         SuspendLayout()
         ' 
         ' TabControl1
@@ -102,6 +107,7 @@ Partial Class MainPanel
         TabControl1.Controls.Add(TabPage3)
         TabControl1.Controls.Add(TabPage4)
         TabControl1.Controls.Add(TabPage5)
+        TabControl1.Controls.Add(TabPage6)
         TabControl1.Location = New Point(-7, 12)
         TabControl1.Name = "TabControl1"
         TabControl1.SelectedIndex = 0
@@ -111,6 +117,7 @@ Partial Class MainPanel
         ' 
         ' TabPage1
         ' 
+        TabPage1.Controls.Add(btnExportCSV)
         TabPage1.Controls.Add(cboSeries)
         TabPage1.Controls.Add(lblSeries)
         TabPage1.Controls.Add(txtSearch)
@@ -668,6 +675,46 @@ Partial Class MainPanel
         Label7.TabIndex = 85
         Label7.Text = "Search Records"
         ' 
+        ' TabPage6
+        ' 
+        TabPage6.Controls.Add(btnFullRecover)
+        TabPage6.Controls.Add(btnFullBackup)
+        TabPage6.Location = New Point(4, 29)
+        TabPage6.Name = "TabPage6"
+        TabPage6.Padding = New Padding(3)
+        TabPage6.Size = New Size(1843, 839)
+        TabPage6.TabIndex = 5
+        TabPage6.Text = "Full Database Backup"
+        TabPage6.UseVisualStyleBackColor = True
+        ' 
+        ' btnFullRecover
+        ' 
+        btnFullRecover.BackColor = Color.Red
+        btnFullRecover.Location = New Point(634, 185)
+        btnFullRecover.Name = "btnFullRecover"
+        btnFullRecover.Size = New Size(171, 93)
+        btnFullRecover.TabIndex = 1
+        btnFullRecover.Text = "Execute Full System Recovery"
+        btnFullRecover.UseVisualStyleBackColor = False
+        ' 
+        ' btnFullBackup
+        ' 
+        btnFullBackup.Location = New Point(633, 401)
+        btnFullBackup.Name = "btnFullBackup"
+        btnFullBackup.Size = New Size(172, 96)
+        btnFullBackup.TabIndex = 0
+        btnFullBackup.Text = "Generate Full System Backup"
+        btnFullBackup.UseVisualStyleBackColor = True
+        ' 
+        ' btnExportCSV
+        ' 
+        btnExportCSV.Location = New Point(813, 523)
+        btnExportCSV.Name = "btnExportCSV"
+        btnExportCSV.Size = New Size(149, 61)
+        btnExportCSV.TabIndex = 59
+        btnExportCSV.Text = "Export to csv"
+        btnExportCSV.UseVisualStyleBackColor = True
+        ' 
         ' MainPanel
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
@@ -698,6 +745,7 @@ Partial Class MainPanel
         CType(dgvStaffAssignments, ComponentModel.ISupportInitialize).EndInit()
         CType(dgvEmployees, ComponentModel.ISupportInitialize).EndInit()
         CType(dgvBranches, ComponentModel.ISupportInitialize).EndInit()
+        TabPage6.ResumeLayout(False)
         ResumeLayout(False)
     End Sub
 
@@ -755,4 +803,8 @@ Partial Class MainPanel
     Friend WithEvents dgvBranches As DataGridView
     Friend WithEvents Label7 As Label
     Friend WithEvents dgvStaffAssignments As DataGridView
+    Friend WithEvents TabPage6 As TabPage
+    Friend WithEvents btnFullRecover As Button
+    Friend WithEvents btnFullBackup As Button
+    Friend WithEvents btnExportCSV As Button
 End Class

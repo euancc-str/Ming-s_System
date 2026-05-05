@@ -1,7 +1,16 @@
 ﻿Public Class Form1
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        LoadDBConfig()
+
+
         Me.WindowState = FormWindowState.Maximized
+
+        MainPanel.MdiParent = Me
+        MainPanel.Show()
+
+        MainPanel.TabControl1.SelectedIndex = 6
     End Sub
 
     Private Sub CloseActiveWindows()

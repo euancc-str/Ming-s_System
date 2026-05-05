@@ -24,6 +24,7 @@ Partial Class MainPanel
     Private Sub InitializeComponent()
         TabControl1 = New TabControl()
         TabPage1 = New TabPage()
+        btnExportCSV = New Button()
         cboSeries = New ComboBox()
         lblSeries = New Label()
         txtSearch = New TextBox()
@@ -79,7 +80,16 @@ Partial Class MainPanel
         TabPage6 = New TabPage()
         btnFullRecover = New Button()
         btnFullBackup = New Button()
-        btnExportCSV = New Button()
+        TabPage7 = New TabPage()
+        btnSaveConfig = New Button()
+        Label12 = New Label()
+        txtDBName = New TextBox()
+        Label11 = New Label()
+        txtDBPass = New TextBox()
+        Label10 = New Label()
+        txtDBUser = New TextBox()
+        Label9 = New Label()
+        txtServerIP = New TextBox()
         TabControl1.SuspendLayout()
         TabPage1.SuspendLayout()
         CType(dgvData, ComponentModel.ISupportInitialize).BeginInit()
@@ -98,6 +108,7 @@ Partial Class MainPanel
         CType(dgvEmployees, ComponentModel.ISupportInitialize).BeginInit()
         CType(dgvBranches, ComponentModel.ISupportInitialize).BeginInit()
         TabPage6.SuspendLayout()
+        TabPage7.SuspendLayout()
         SuspendLayout()
         ' 
         ' TabControl1
@@ -108,7 +119,8 @@ Partial Class MainPanel
         TabControl1.Controls.Add(TabPage4)
         TabControl1.Controls.Add(TabPage5)
         TabControl1.Controls.Add(TabPage6)
-        TabControl1.Location = New Point(-7, 12)
+        TabControl1.Controls.Add(TabPage7)
+        TabControl1.Location = New Point(2, 12)
         TabControl1.Name = "TabControl1"
         TabControl1.SelectedIndex = 0
         TabControl1.ShowToolTips = True
@@ -152,6 +164,15 @@ Partial Class MainPanel
         TabPage1.TabIndex = 0
         TabPage1.Text = "Main"
         TabPage1.UseVisualStyleBackColor = True
+        ' 
+        ' btnExportCSV
+        ' 
+        btnExportCSV.Location = New Point(813, 523)
+        btnExportCSV.Name = "btnExportCSV"
+        btnExportCSV.Size = New Size(149, 61)
+        btnExportCSV.TabIndex = 59
+        btnExportCSV.Text = "Export to csv"
+        btnExportCSV.UseVisualStyleBackColor = True
         ' 
         ' cboSeries
         ' 
@@ -692,7 +713,7 @@ Partial Class MainPanel
         btnFullRecover.BackColor = Color.Red
         btnFullRecover.Location = New Point(634, 185)
         btnFullRecover.Name = "btnFullRecover"
-        btnFullRecover.Size = New Size(171, 93)
+        btnFullRecover.Size = New Size(445, 172)
         btnFullRecover.TabIndex = 1
         btnFullRecover.Text = "Execute Full System Recovery"
         btnFullRecover.UseVisualStyleBackColor = False
@@ -701,19 +722,110 @@ Partial Class MainPanel
         ' 
         btnFullBackup.Location = New Point(633, 401)
         btnFullBackup.Name = "btnFullBackup"
-        btnFullBackup.Size = New Size(172, 96)
+        btnFullBackup.Size = New Size(446, 192)
         btnFullBackup.TabIndex = 0
         btnFullBackup.Text = "Generate Full System Backup"
         btnFullBackup.UseVisualStyleBackColor = True
         ' 
-        ' btnExportCSV
+        ' TabPage7
         ' 
-        btnExportCSV.Location = New Point(813, 523)
-        btnExportCSV.Name = "btnExportCSV"
-        btnExportCSV.Size = New Size(149, 61)
-        btnExportCSV.TabIndex = 59
-        btnExportCSV.Text = "Export to csv"
-        btnExportCSV.UseVisualStyleBackColor = True
+        TabPage7.Controls.Add(btnSaveConfig)
+        TabPage7.Controls.Add(Label12)
+        TabPage7.Controls.Add(txtDBName)
+        TabPage7.Controls.Add(Label11)
+        TabPage7.Controls.Add(txtDBPass)
+        TabPage7.Controls.Add(Label10)
+        TabPage7.Controls.Add(txtDBUser)
+        TabPage7.Controls.Add(Label9)
+        TabPage7.Controls.Add(txtServerIP)
+        TabPage7.Location = New Point(4, 29)
+        TabPage7.Name = "TabPage7"
+        TabPage7.Padding = New Padding(3)
+        TabPage7.Size = New Size(1843, 839)
+        TabPage7.TabIndex = 6
+        TabPage7.Text = "Server Details"
+        TabPage7.UseVisualStyleBackColor = True
+        ' 
+        ' btnSaveConfig
+        ' 
+        btnSaveConfig.Location = New Point(699, 629)
+        btnSaveConfig.Name = "btnSaveConfig"
+        btnSaveConfig.Size = New Size(241, 86)
+        btnSaveConfig.TabIndex = 8
+        btnSaveConfig.Text = "Save Server Settings"
+        btnSaveConfig.UseVisualStyleBackColor = True
+        ' 
+        ' Label12
+        ' 
+        Label12.AutoSize = True
+        Label12.Font = New Font("Segoe UI", 15F)
+        Label12.Location = New Point(496, 469)
+        Label12.Name = "Label12"
+        Label12.Size = New Size(185, 35)
+        Label12.TabIndex = 7
+        Label12.Text = "database name"
+        ' 
+        ' txtDBName
+        ' 
+        txtDBName.Font = New Font("Segoe UI", 15F)
+        txtDBName.Location = New Point(710, 466)
+        txtDBName.Name = "txtDBName"
+        txtDBName.Size = New Size(270, 41)
+        txtDBName.TabIndex = 6
+        ' 
+        ' Label11
+        ' 
+        Label11.AutoSize = True
+        Label11.Font = New Font("Segoe UI", 15F)
+        Label11.Location = New Point(561, 389)
+        Label11.Name = "Label11"
+        Label11.Size = New Size(120, 35)
+        Label11.TabIndex = 5
+        Label11.Text = "Password"
+        ' 
+        ' txtDBPass
+        ' 
+        txtDBPass.Font = New Font("Segoe UI", 15F)
+        txtDBPass.Location = New Point(710, 389)
+        txtDBPass.Name = "txtDBPass"
+        txtDBPass.Size = New Size(270, 41)
+        txtDBPass.TabIndex = 4
+        ' 
+        ' Label10
+        ' 
+        Label10.AutoSize = True
+        Label10.Font = New Font("Segoe UI", 15F)
+        Label10.Location = New Point(605, 310)
+        Label10.Name = "Label10"
+        Label10.Size = New Size(62, 35)
+        Label10.TabIndex = 3
+        Label10.Text = "user"
+        ' 
+        ' txtDBUser
+        ' 
+        txtDBUser.Font = New Font("Segoe UI", 15F)
+        txtDBUser.Location = New Point(710, 310)
+        txtDBUser.Name = "txtDBUser"
+        txtDBUser.Size = New Size(270, 41)
+        txtDBUser.TabIndex = 2
+        ' 
+        ' Label9
+        ' 
+        Label9.AutoSize = True
+        Label9.Font = New Font("Segoe UI", 15F)
+        Label9.Location = New Point(568, 219)
+        Label9.Name = "Label9"
+        Label9.Size = New Size(113, 35)
+        Label9.TabIndex = 1
+        Label9.Text = "Server Ip"
+        ' 
+        ' txtServerIP
+        ' 
+        txtServerIP.Font = New Font("Segoe UI", 15F)
+        txtServerIP.Location = New Point(710, 219)
+        txtServerIP.Name = "txtServerIP"
+        txtServerIP.Size = New Size(270, 41)
+        txtServerIP.TabIndex = 0
         ' 
         ' MainPanel
         ' 
@@ -746,6 +858,8 @@ Partial Class MainPanel
         CType(dgvEmployees, ComponentModel.ISupportInitialize).EndInit()
         CType(dgvBranches, ComponentModel.ISupportInitialize).EndInit()
         TabPage6.ResumeLayout(False)
+        TabPage7.ResumeLayout(False)
+        TabPage7.PerformLayout()
         ResumeLayout(False)
     End Sub
 
@@ -807,4 +921,14 @@ Partial Class MainPanel
     Friend WithEvents btnFullRecover As Button
     Friend WithEvents btnFullBackup As Button
     Friend WithEvents btnExportCSV As Button
+    Friend WithEvents TabPage7 As TabPage
+    Friend WithEvents btnSaveConfig As Button
+    Friend WithEvents Label12 As Label
+    Friend WithEvents txtDBName As TextBox
+    Friend WithEvents Label11 As Label
+    Friend WithEvents txtDBPass As TextBox
+    Friend WithEvents Label10 As Label
+    Friend WithEvents txtDBUser As TextBox
+    Friend WithEvents Label9 As Label
+    Friend WithEvents txtServerIP As TextBox
 End Class

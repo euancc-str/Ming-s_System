@@ -177,19 +177,34 @@ Public Class MainPanel
         Try
 
             sql = generateSearchQuery(searchVal)
-            dgvData.DataSource = getDataTable(sql)
+            If String.IsNullOrWhiteSpace(sql) Then Return
+            Dim dt As DataTable = getDataTable(sql)
+
+            If choice = 3 Then
+                For Each row As DataRow In dt.Rows
+                    If Not IsDBNull(row("Address")) Then
+                        row("Address") = controller.DecryptData(row("Address").ToString())
+                    End If
+                Next
+            End If
+
+            dgvData.DataSource = dt
             dgvData.AutoResizeColumns()
+
+
             If dgvData.Rows.Count = 1 Then
                 Dim row As DataGridViewRow = dgvData.Rows(0)
                 currentID = Val(row.Cells("ID").Value.ToString())
                 LoadRecordDetails(currentID)
                 btnDelete.Enabled = True
+
                 If choice <> 9 Then
                     btnSave.Text = "Update Record"
                 End If
             End If
+
         Catch ex As Exception
-            MsgBox("Error loading grid: " & ex.Message)
+            MsgBox("Error loading grid: " & ex.Message, MsgBoxStyle.Critical)
         End Try
     End Sub
     Private Sub setcontrolsvisible(isVisible As Boolean, ParamArray controls() As Control)
@@ -329,7 +344,7 @@ Public Class MainPanel
                     txtField3.Text = cmdread("country_origin").ToString()
                 ElseIf choice = 3 Then
                     txtField1.Text = cmdread("customer_name").ToString()
-                    txtField2.Text = cmdread("address").ToString()
+                    txtField2.Text = controller.DecryptData(cmdread("address").ToString())
                 ElseIf choice = 4 Then
                     txtField1.Text = cmdread("employee_name").ToString()
                     txtField2.Text = cmdread("role").ToString()
@@ -400,14 +415,14 @@ Public Class MainPanel
                                              "Did the customer pay the remaining balance? Click YES to mark as fully paid and deliver.",
                                              MsgBoxStyle.YesNo + MsgBoxStyle.Exclamation, "Balance Due")
 
-                    ' If they didn't pay, stop the delivery!
+
                     If overrideAns = MsgBoxResult.No Then Return
                 End If
             End If
 
             If MsgBox("Confirm marking this order as Delivered?", MsgBoxStyle.YesNo + MsgBoxStyle.Question) = MsgBoxResult.Yes Then
 
-                ' THE FIX: We update the status AND force the down_payment to equal the grandTotal!
+
                 Dim updateSql As String = "UPDATE purchases SET status = 'Delivered', down_payment = " & grandTotal &
                                           " WHERE customer_id = " & currentCustID &
                                           " AND product_id = " & currentProdID &
@@ -522,7 +537,10 @@ Public Class MainPanel
     Private Function generateInsertQuery(seriesSql As String) As String
         If choice = 1 Then Return "INSERT INTO product (item_name, buying_price, selling_price, status, color, size, stock_count, series_id) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & cbBox1.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSql & ")"
         If choice = 2 Then Return "INSERT INTO supplier (company_name, contact_person, country_origin) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
-        If choice = 3 Then Return "INSERT INTO customer (customer_name, address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "')"
+        If choice = 3 Then
+            Dim secureAddress = controller.EncryptData(txtField2.Text.Trim())
+            Return "INSERT INTO customer (customer_name, address) VALUES ('" & txtField1.Text.Trim() & "', '" & secureAddress & "')"
+        End If
         If choice = 4 Then Return "INSERT INTO employee (employee_name, role, email_address) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
         If choice = 5 Then Return "INSERT INTO courier (company_name, address, contact_number) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
         If choice = 6 Then Return "INSERT INTO series (series_name, manufacturer, release_year, total_in_set) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & txtField5.Text.Trim() & "')"
@@ -532,7 +550,10 @@ Public Class MainPanel
     Private Function generateUpdateQuery(seriesSql As String) As String
         If choice = 1 Then Return "UPDATE product SET item_name='" & txtField1.Text.Trim() & "', buying_price='" & txtField2.Text.Trim() & "', selling_price='" & txtField3.Text.Trim() & "', status='" & cbBox1.Text.Trim() & "', color='" & txtField5.Text.Trim() & "', size='" & txtField6.Text.Trim() & "', stock_count='" & txtField7.Text.Trim() & "', series_id=" & seriesSql & " WHERE product_id=" & currentID
         If choice = 2 Then Return "UPDATE supplier SET company_name='" & txtField1.Text.Trim() & "', contact_person='" & txtField2.Text.Trim() & "', country_origin='" & txtField3.Text.Trim() & "' WHERE supplier_id=" & currentID
-        If choice = 3 Then Return "UPDATE customer SET customer_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "' WHERE customer_id=" & currentID
+        If choice = 3 Then
+            Dim secureAddress = controller.EncryptData(txtField2.Text.Trim())
+            Return "UPDATE customer SET customer_name='" & txtField1.Text.Trim() & "', address='" & secureAddress & "' WHERE customer_id=" & currentID
+        End If
         If choice = 4 Then Return "UPDATE employee SET employee_name='" & txtField1.Text.Trim() & "', role='" & txtField2.Text.Trim() & "', email_address='" & txtField3.Text.Trim() & "' WHERE employee_id=" & currentID
         If choice = 5 Then Return "UPDATE courier SET company_name='" & txtField1.Text.Trim() & "', address='" & txtField2.Text.Trim() & "', contact_number='" & txtField3.Text.Trim() & "' WHERE courier_id=" & currentID
         If choice = 6 Then Return "UPDATE series SET series_name='" & txtField1.Text.Trim() & "', manufacturer='" & txtField2.Text.Trim() & "', release_year='" & txtField3.Text.Trim() & "', total_in_set='" & txtField5.Text.Trim() & "' WHERE series_id=" & currentID
@@ -808,6 +829,12 @@ Public Class MainPanel
             Case 4
 
                 LoadAdminData("")
+            Case 6
+                txtServerIP.Text = db_server
+                txtDBUser.Text = db_uid
+                txtDBPass.Text = db_pwd
+                txtDBName.Text = db_name
+
         End Select
 
         If choice <> 9 AndAlso btnClear IsNot Nothing Then
@@ -823,7 +850,13 @@ Public Class MainPanel
             Dim sqlCust = "SELECT customer_id AS ID, customer_name AS Name, address AS Address " &
                           "FROM customer " &
                           "WHERE customer_name LIKE '%" & searchVal & "%'"
-            dgvCust.DataSource = getDataTable(sqlCust)
+            Dim dtCust As DataTable = getDataTable(sqlCust)
+            For Each row As DataRow In dtCust.Rows
+                If Not IsDBNull(row("Address")) Then
+                    row("Address") = controller.DecryptData(row("Address").ToString())
+                End If
+            Next
+            dgvCust.DataSource = dtCust
             dgvCust.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
 
 
@@ -1118,6 +1151,36 @@ Public Class MainPanel
                 MsgBox("Report exported successfully!" & vbCrLf & "Saved to: " & sfd.FileName, MsgBoxStyle.Information, "Export Complete")
             Catch ex As Exception
                 MsgBox("Error creating report: " & ex.Message, MsgBoxStyle.Critical)
+            End Try
+        End If
+    End Sub
+    Private Sub btnSaveConfig_Click(sender As Object, e As EventArgs) Handles btnSaveConfig.Click
+        Dim ask = MsgBox("Are you sure you want to update the Database Server settings?", MsgBoxStyle.YesNo + MsgBoxStyle.Question, "Confirm System Change")
+
+        If ask = MsgBoxResult.Yes Then
+            Try
+
+                Dim newConfig As String = txtServerIP.Text.Trim() & vbCrLf &
+                                          txtDBUser.Text.Trim() & vbCrLf &
+                                          txtDBPass.Text.Trim() & vbCrLf &
+                                          txtDBName.Text.Trim()
+
+
+                Dim configPath As String = Application.StartupPath & "\db_config.txt"
+                System.IO.File.WriteAllText(configPath, newConfig)
+
+
+                db_server = txtServerIP.Text.Trim()
+                db_uid = txtDBUser.Text.Trim()
+                db_pwd = txtDBPass.Text.Trim()
+                db_name = txtDBName.Text.Trim()
+
+                strconn = "server=" & db_server & ";uid=" & db_uid & ";password=" & db_pwd & ";database=" & db_name
+
+                MsgBox("Server Configuration Saved Successfully!" & vbCrLf & "The system is now pointing to: " & db_server, MsgBoxStyle.Information, "Settings Updated")
+
+            Catch ex As Exception
+                MsgBox("Error saving configuration: " & ex.Message, MsgBoxStyle.Critical)
             End Try
         End If
     End Sub

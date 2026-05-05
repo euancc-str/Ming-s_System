@@ -1,5 +1,8 @@
-﻿Imports MySql.Data.MySqlClient
-Imports System.Data
+﻿Imports System.Data
+Imports System.IO
+Imports System.Security.Cryptography
+Imports System.Text
+Imports MySql.Data.MySqlClient
 
 Public Class TransactionController
 
@@ -87,7 +90,9 @@ Public Class TransactionController
     Public Function ResolveCustomer(customerName As String, address As String) As Integer
         readquery($"SELECT customer_id FROM customer WHERE customer_name = '{customerName}'")
         If Not cmdread.HasRows Then
-            readquery($"INSERT INTO customer (customer_name, address) VALUES ('{customerName}', '{address}')")
+            ' THE FIX: Encrypt the address coming from the Sales Screen!
+            Dim secureAddress = EncryptData(address)
+            readquery($"INSERT INTO customer (customer_name, address) VALUES ('{customerName}', '{secureAddress}')")
         End If
         Return GetId("SELECT customer_id FROM customer WHERE customer_name = '" & customerName & "'", "customer_id")
     End Function
@@ -428,6 +433,51 @@ Public Class TransactionController
         Catch ex As Exception
             readquery("ROLLBACK")
             Throw New Exception("Bulk sweep failed: " & ex.Message)
+        End Try
+    End Function
+    Private Const SECRET_KEY As String = "MingsCraftSecureKey1234567890123"
+
+    Public Function EncryptData(plainText As String) As String
+        If String.IsNullOrWhiteSpace(plainText) Then Return ""
+
+        Using aes As Aes = aes.Create()
+            aes.Key = Encoding.UTF8.GetBytes(SECRET_KEY)
+            aes.IV = New Byte(15) {}
+
+            Dim encryptor As ICryptoTransform = aes.CreateEncryptor(aes.Key, aes.IV)
+            Using ms As New MemoryStream()
+                Using cs As New CryptoStream(ms, encryptor, CryptoStreamMode.Write)
+                    Using sw As New StreamWriter(cs)
+                        sw.Write(plainText)
+                    End Using
+                    Return Convert.ToBase64String(ms.ToArray())
+                End Using
+            End Using
+        End Using
+    End Function
+
+    Public Function DecryptData(cipherText As String) As String
+        If String.IsNullOrWhiteSpace(cipherText) Then Return ""
+
+        Try
+            Using aes As Aes = aes.Create()
+                aes.Key = Encoding.UTF8.GetBytes(SECRET_KEY)
+                aes.IV = New Byte(15) {}
+
+                Dim decryptor As ICryptoTransform = aes.CreateDecryptor(aes.Key, aes.IV)
+                Dim cipherBytes As Byte() = Convert.FromBase64String(cipherText)
+
+                Using ms As New MemoryStream(cipherBytes)
+                    Using cs As New CryptoStream(ms, decryptor, CryptoStreamMode.Read)
+                        Using sr As New StreamReader(cs)
+                            Return sr.ReadToEnd()
+                        End Using
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            ' If it fails to decrypt (e.g., old unencrypted data), just return the raw text
+            Return cipherText
         End Try
     End Function
 End Class

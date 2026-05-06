@@ -26,49 +26,9 @@ Public Class MainPanel
             e.Handled = True
         End If
     End Sub
-    Private Sub showReports()
-        btnSave.Visible = False : btnClear.Visible = False : btnDelete.Visible = False
-        dgvData.Visible = False
 
-        If txtSearch IsNot Nothing Then txtSearch.Visible = True
-        txtField1.Visible = False : txtField2.Visible = False : txtField3.Visible = False
-        txtField5.Visible = False : txtField6.Visible = False : txtField7.Visible = False
-        cbBox1.Visible = False
-        lblField1.Visible = False : lblField2.Visible = False : lblField3.Visible = False
-        lblField4.Visible = False : lblField5.Visible = False : lblField6.Visible = False
-        lblField7.Visible = False
-        lblSeries.Visible = False : cboSeries.Visible = False
-
-        lblField.Text = "SELECT REPORT:"
-        cboReport.Items.Clear()
-        cboReport.Items.Add("0 - Executive Business Snapshot")
-        cboReport.Items.Add("1 - Branch Inventory Overview")
-        cboReport.Items.Add("2 - Sales Performance by Customer")
-        cboReport.Items.Add("3 - Supplier Restock History")
-        cboReport.Items.Add("4 - Low Stock Alert (Stock <= 5)")
-        cboReport.Items.Add("5 - Full Supply Chain Trace")
-
-        Label1.Location = New Point(40, 148)
-        Label1.Visible = True
-
-        If txtSearch IsNot Nothing Then
-            txtSearch.Location = New Point(Label1.Location.X + Label1.Width + 10, 148)
-            txtSearch.Visible = True
-        End If
-
-        cboReport.Location = New Point(txtSearch.Location.X + txtSearch.Width + 50, 148)
-        cboReport.Visible = True
-
-        btnRunReport.Location = New Point(cboReport.Location.X + cboReport.Width + 10, 148)
-        btnRunReport.Visible = True
-        dgvReport.Visible = True
-
-        ' Auto-Run the Dashboard
-        cboReport.SelectedIndex = 0
-        btnRunReport.PerformClick()
-        Return
-    End Sub
     Private Sub Form2_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        SetupDefectUI()
         Me.WindowState = FormWindowState.Maximized
         If cboReport IsNot Nothing Then cboReport.Visible = False
         If btnRunReport IsNot Nothing Then btnRunReport.Visible = False
@@ -84,10 +44,7 @@ Public Class MainPanel
             cboSeries.Items.Add(cmdread("series_name").ToString())
         End While
 
-        If operation = 5 Then
-            showReports()
-            Return
-        End If
+
 
         btnSave.Visible = True : btnClear.Visible = True : btnDelete.Visible = True
         If txtSearch IsNot Nothing Then txtSearch.Visible = True
@@ -95,34 +52,35 @@ Public Class MainPanel
         If choice = 1 Then
             lblField.Text = "PRODUCT INFORMATION"
             lblField1.Text = "Item Name:" : lblField2.Text = "Buying Price:" : lblField3.Text = "Selling Price:"
-            lblField4.Text = "Status:" : lblField5.Text = "Color:" : lblField6.Text = "Size:" : lblField7.Text = "Stock Count:"
-            lblField4.Visible = True : cbBox1.Visible = True : lblField5.Visible = True : txtField5.Visible = True
+            lblField5.Text = "Color:" : lblField6.Text = "Size:" : lblField7.Text = "Stock Count:"
+
+            lblField5.Visible = True : txtField5.Visible = True
             lblField6.Visible = True : txtField6.Visible = True : lblField7.Visible = True : txtField7.Visible = True
             lblSeries.Visible = True : cboSeries.Visible = True
         ElseIf choice = 2 Then
             lblField.Text = "SUPPLIER INFORMATION"
             lblField1.Text = "Company Name:" : lblField2.Text = "Contact Person:" : lblField3.Text = "Country of Origin:"
-            lblField4.Visible = False : cbBox1.Visible = False : lblField5.Visible = False : txtField5.Visible = False
+            lblField5.Visible = False : txtField5.Visible = False
             lblField6.Visible = False : txtField6.Visible = False : lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
         ElseIf choice = 3 Then
             lblField.Text = "CUSTOMER INFORMATION"
             lblField1.Text = "Customer Name:" : lblField2.Text = "Address:"
-            lblField3.Visible = False : txtField3.Visible = False : lblField4.Visible = False : cbBox1.Visible = False
+            lblField3.Visible = False : txtField3.Visible = False
             lblField5.Visible = False : txtField5.Visible = False : lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
         ElseIf choice = 4 Then
             lblField.Text = "EMPLOYEE INFORMATION"
             lblField1.Text = "Employee Name:" : lblField2.Text = "Role:" : lblField3.Text = "Email Address:"
-            lblField3.Visible = True : txtField3.Visible = True : lblField4.Visible = False : cbBox1.Visible = False
+            lblField3.Visible = True : txtField3.Visible = True
             lblField5.Visible = False : txtField5.Visible = False : lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
         ElseIf choice = 5 Then
             lblField.Text = "COURIER INFORMATION"
             lblField1.Text = "Company Name:" : lblField2.Text = "Address:" : lblField3.Text = "Contact Number:"
-            lblField3.Visible = True : txtField3.Visible = True : lblField4.Visible = False : cbBox1.Visible = False
+            lblField3.Visible = True : txtField3.Visible = True
             lblField5.Visible = False : txtField5.Visible = False : lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
@@ -130,14 +88,14 @@ Public Class MainPanel
             lblField.Text = "SERIES INFORMATION"
             lblField1.Text = "Series Name:" : lblField2.Text = "Manufacturer:" : lblField3.Text = "Release Year:"
             lblField5.Text = "Total in Set:"
-            lblField3.Visible = True : txtField3.Visible = True : lblField4.Visible = False : cbBox1.Visible = False
+            lblField3.Visible = True : txtField3.Visible = True
             lblField5.Visible = True : txtField5.Visible = True : lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
         ElseIf choice = 7 Then
             lblField.Text = "BRANCH INFORMATION"
             lblField1.Text = "Branch Name:" : lblField2.Text = "Address:" : lblField3.Text = "Operating Hours:"
-            lblField3.Visible = True : txtField3.Visible = True : lblField4.Visible = False : cbBox1.Visible = False
+            lblField3.Visible = True : txtField3.Visible = True
             lblField5.Visible = False : txtField5.Visible = False : lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
             lblSeries.Visible = False : cboSeries.Visible = False
@@ -147,7 +105,7 @@ Public Class MainPanel
             lblField1.Visible = True : txtField1.Visible = True : txtField1.ReadOnly = True
             lblField2.Visible = True : txtField2.Visible = True : txtField2.ReadOnly = True
             lblField3.Visible = True : txtField3.Visible = True : txtField3.ReadOnly = True
-            lblField4.Visible = False : cbBox1.Visible = False
+
             lblField5.Visible = False : txtField5.Visible = False
             lblField6.Visible = False : txtField6.Visible = False
             lblField7.Visible = False : txtField7.Visible = False
@@ -163,6 +121,16 @@ Public Class MainPanel
             cboBranchSweep.Text = "Select Branch to Empty..."
 
             dgvBranchInventory.DataSource = Nothing
+        End If
+        If cboCategory IsNot Nothing Then
+            cboCategory.DropDownStyle = ComboBoxStyle.DropDownList
+            cboCategory.Items.Clear()
+            cboCategory.Items.Add("1. Employees & Staff")
+            cboCategory.Items.Add("2. Products & Inventory")
+            cboCategory.Items.Add("3. Customers & Demographics")
+            cboCategory.Items.Add("4. Sales, Orders & Revenue")
+            cboCategory.Items.Add("5. Suppliers & Logistics")
+            cboCategory.SelectedIndex = 0 ' Select the first one by default
         End If
         LoadGridData()
     End Sub
@@ -215,7 +183,8 @@ Public Class MainPanel
     Private Function generateSearchQuery(searchVal As String) As String
         Dim sql As String = ""
         If choice = 1 OrElse choice = 9 Then
-            sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.status AS Status, p.stock_count AS Stock, s.series_name AS Series " &
+            ' Status removed from query here
+            sql = "SELECT p.product_id AS ID, p.item_name AS Name, p.buying_price AS 'Buy Price', p.selling_price AS 'Sell Price', p.color AS Color, p.size AS Size, p.stock_count AS Stock, s.series_name AS Series " &
                   "FROM product p LEFT JOIN series s ON p.series_id = s.series_id"
             If searchVal <> "" Then sql &= " WHERE p.item_name LIKE '%" & searchVal & "%'"
         ElseIf choice = 2 Then
@@ -329,7 +298,6 @@ Public Class MainPanel
                     txtField1.Text = cmdread("item_name").ToString()
                     txtField2.Text = cmdread("buying_price").ToString()
                     txtField3.Text = cmdread("selling_price").ToString()
-                    cbBox1.Text = cmdread("status").ToString()
                     txtField5.Text = cmdread("color").ToString()
                     txtField6.Text = cmdread("size").ToString()
                     txtField7.Text = cmdread("stock_count").ToString()
@@ -370,7 +338,7 @@ Public Class MainPanel
     End Sub
 
     Private Function isSellingPriceValid() As Boolean
-        If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" OrElse txtField5.Text.Trim() = "" OrElse txtField6.Text.Trim() = "" OrElse txtField7.Text.Trim() = "" OrElse cbBox1.Text.Trim() = "" Then
+        If txtField2.Text.Trim() = "" OrElse txtField3.Text.Trim() = "" OrElse txtField5.Text.Trim() = "" OrElse txtField6.Text.Trim() = "" OrElse txtField7.Text.Trim() = "" Then
             MsgBox("Please completely fill out all product details.", MsgBoxStyle.Exclamation)
             Return False
         End If
@@ -535,7 +503,7 @@ Public Class MainPanel
         readquery(checkQuery)
     End Sub
     Private Function generateInsertQuery(seriesSql As String) As String
-        If choice = 1 Then Return "INSERT INTO product (item_name, buying_price, selling_price, status, color, size, stock_count, series_id) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & cbBox1.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSql & ")"
+        If choice = 1 Then Return "INSERT INTO product (item_name, buying_price, selling_price, color, size, stock_count, series_id) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "', '" & txtField5.Text.Trim() & "', '" & txtField6.Text.Trim() & "', '" & txtField7.Text.Trim() & "', " & seriesSql & ")"
         If choice = 2 Then Return "INSERT INTO supplier (company_name, contact_person, country_origin) VALUES ('" & txtField1.Text.Trim() & "', '" & txtField2.Text.Trim() & "', '" & txtField3.Text.Trim() & "')"
         If choice = 3 Then
             Dim secureAddress = controller.EncryptData(txtField2.Text.Trim())
@@ -548,7 +516,7 @@ Public Class MainPanel
         Return ""
     End Function
     Private Function generateUpdateQuery(seriesSql As String) As String
-        If choice = 1 Then Return "UPDATE product SET item_name='" & txtField1.Text.Trim() & "', buying_price='" & txtField2.Text.Trim() & "', selling_price='" & txtField3.Text.Trim() & "', status='" & cbBox1.Text.Trim() & "', color='" & txtField5.Text.Trim() & "', size='" & txtField6.Text.Trim() & "', stock_count='" & txtField7.Text.Trim() & "', series_id=" & seriesSql & " WHERE product_id=" & currentID
+        If choice = 1 Then Return "UPDATE product SET item_name='" & txtField1.Text.Trim() & "', buying_price='" & txtField2.Text.Trim() & "', selling_price='" & txtField3.Text.Trim() & "', color='" & txtField5.Text.Trim() & "', size='" & txtField6.Text.Trim() & "', stock_count='" & txtField7.Text.Trim() & "', series_id=" & seriesSql & " WHERE product_id=" & currentID
         If choice = 2 Then Return "UPDATE supplier SET company_name='" & txtField1.Text.Trim() & "', contact_person='" & txtField2.Text.Trim() & "', country_origin='" & txtField3.Text.Trim() & "' WHERE supplier_id=" & currentID
         If choice = 3 Then
             Dim secureAddress = controller.EncryptData(txtField2.Text.Trim())
@@ -641,13 +609,17 @@ Public Class MainPanel
         If choice = 7 Then str = "DELETE FROM branch WHERE branch_id = " & currentID
         Return str
     End Function
-    Private Sub btnRunReport_Click(sender As Object, e As EventArgs)
+    Private Sub btnRunReport_Click(sender As Object, e As EventArgs) Handles btnRunReport.Click
         If cboReport.Text = "" Then
             MsgBox("Please select a report to run.", MsgBoxStyle.Exclamation)
             Return
         End If
 
-        Dim reportIndex As Integer = Val(cboReport.Text.Substring(0, 1))
+
+        Dim reportString = cboReport.Text.Split("-"c)(0).Trim()
+        Dim reportIndex As Integer = Val(reportString)
+
+
         Dim searchVal = ""
         If txtSearch IsNot Nothing Then searchVal = txtSearch.Text.Trim.Replace("'", "''")
 
@@ -657,10 +629,8 @@ Public Class MainPanel
             Dim dt As New DataTable
             dt = getDataTable(sql)
             dgvReport.DataSource = dt
-
             dgvReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            dgvReport.ClearSelection
-
+            dgvReport.ClearSelection()
             lblField.Text = "REPORT: " & cboReport.Text
         Catch ex As Exception
             MsgBox("Report error: " & ex.Message, MsgBoxStyle.Critical)
@@ -684,91 +654,96 @@ Public Class MainPanel
         Dim sql As String = ""
 
         Select Case reportIndex
-            Case 0
-                sql = "SELECT 'Total Registered Products' AS 'Business Metric', COUNT(product_id) AS 'Current Value' FROM product " &
-                      "UNION ALL " &
-                      "SELECT 'Total Items in Main Warehouse', COALESCE(SUM(stock_count), 0) FROM product " &
-                      "UNION ALL " &
-                      "SELECT 'Total Items in Branches', COALESCE(SUM(quantity), 0) FROM stores " &
-                      "UNION ALL " &
-                      "SELECT 'Pending Orders (Needs Delivery)', COUNT(*) FROM purchases WHERE status = 'Pending' " &
-                      "UNION ALL " &
-                      "SELECT 'Total Lifetime Sales Revenue (PHP)', COALESCE(SUM(p.selling_price * pu.quantity), 0) FROM purchases pu INNER JOIN product p ON pu.product_id = p.product_id WHERE pu.status = 'Delivered' " &
-                      "UNION ALL " &
-                      "SELECT 'Total Branch Locations', COUNT(branch_id) FROM branch"
-
             Case 1
-                sql = "SELECT b.branch_name AS 'Branch', p.item_name AS 'Product', p.stock_count AS 'Stock', " &
-                      "p.selling_price AS 'Price (PHP)', s.last_restocked_date AS 'Last Restocked' " &
-                      "FROM stores s INNER JOIN branch b ON s.branch_id = b.branch_id " &
-                      "INNER JOIN product p ON s.product_id = p.product_id "
-                If searchVal <> "" Then
-                    sql &= "WHERE b.branch_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%' "
-                End If
-                sql &= "ORDER BY b.branch_name, s.last_restocked_date DESC"
-
+                sql = "SELECT * FROM employee"
             Case 2
-                sql = "SELECT c.customer_name AS 'Customer', p.item_name AS 'Product Purchased', " &
-                      "pu.quantity AS 'Qty', pu.reservation_date AS 'Order Date', pu.status AS 'Status', " &
-                      "p.selling_price AS 'Sell Price', p.buying_price AS 'Buy Price', " &
-                      "((p.selling_price - p.buying_price) * pu.quantity) AS 'Total Profit (PHP)', " &
-                      "COALESCE(co.company_name, 'Walk-in / Pickup') AS 'Courier Used' " &
-                      "FROM purchases pu INNER JOIN customer c ON pu.customer_id = c.customer_id " &
-                      "INNER JOIN product p ON pu.product_id = p.product_id " &
-                      "LEFT JOIN delivers_to dt ON dt.customer_id = c.customer_id " &
-                      "LEFT JOIN courier co ON dt.courier_id = co.courier_id " &
-                      "WHERE pu.status != 'Cancelled' "
-
-                If searchVal <> "" Then
-                    sql &= "AND (c.customer_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%' OR pu.status LIKE '%" & searchVal & "%') "
-                End If
-                sql &= "ORDER BY pu.reservation_date DESC"
-
+                sql = "SELECT employee_name, role FROM employee"
             Case 3
-                sql = "SELECT sup.company_name AS 'Supplier', sup.country_origin AS 'Origin', " &
-                      "p.item_name AS 'Product', pr.supply_date AS 'Supply Date', " &
-                      "pr.quantity_supplied AS 'Qty Supplied', pr.supply_price AS 'Unit Cost', " &
-                      "(pr.quantity_supplied * pr.supply_price) AS 'Total Cost (PHP)' " &
-                      "FROM provides pr INNER JOIN supplier sup ON pr.supplier_id = sup.supplier_id " &
-                      "INNER JOIN product p ON pr.product_id = p.product_id "
-                If searchVal <> "" Then
-                    sql &= "WHERE sup.company_name LIKE '%" & searchVal & "%' OR p.item_name LIKE '%" & searchVal & "%' "
-                End If
-                sql &= "ORDER BY pr.supply_date DESC"
-
+                sql = "SELECT employee_name, role, email_address FROM employee WHERE role = 'Staff'"
             Case 4
-                sql = "SELECT p.item_name AS 'Product', p.stock_count AS 'Remaining Stock', " &
-                      "p.selling_price AS 'Sell Price', sup.company_name AS 'Last Supplier', " &
-                      "sup.country_origin AS 'Supplier Origin', pr.supply_date AS 'Last Supply Date' " &
-                      "FROM product p LEFT JOIN provides pr ON p.product_id = p.product_id " &
-                      "AND pr.supply_date = (SELECT MAX(supply_date) FROM provides WHERE product_id = p.product_id) " &
-                      "LEFT JOIN supplier sup ON pr.supplier_id = sup.supplier_id " &
-                      "WHERE p.stock_count <= 5 "
-                If searchVal <> "" Then
-                    sql &= "AND (p.item_name LIKE '%" & searchVal & "%' OR sup.company_name LIKE '%" & searchVal & "%') "
-                End If
-                sql &= "ORDER BY p.stock_count ASC"
-
+                sql = "SELECT item_name, color, size, buying_price FROM product WHERE buying_price > 500.00"
             Case 5
-                sql = "SELECT p.item_name AS 'Product', sup.company_name AS 'Supplied By', " &
-                      "b.branch_name AS 'Stored At', c.customer_name AS 'Sold To', " &
-                      "pu.status AS 'Order Status', co.company_name AS 'Shipped By', " &
-                      "dt.delivery_date AS 'Ship Date' " &
-                      "FROM product p LEFT JOIN provides pr ON p.product_id = pr.product_id " &
-                      "LEFT JOIN supplier sup ON pr.supplier_id = sup.supplier_id " &
-                      "LEFT JOIN stores st ON p.product_id = st.product_id " &
-                      "LEFT JOIN branch b ON st.branch_id = b.branch_id " &
-                      "LEFT JOIN purchases pu ON p.product_id = pu.product_id " &
-                      "LEFT JOIN customer c ON pu.customer_id = c.customer_id " &
-                      "LEFT JOIN delivers_to dt ON c.customer_id = dt.customer_id " &
-                      "LEFT JOIN courier co ON dt.courier_id = co.courier_id "
-                If searchVal <> "" Then
-                    sql &= "WHERE p.item_name LIKE '%" & searchVal & "%' OR sup.company_name LIKE '%" & searchVal & "%' OR b.branch_name LIKE '%" & searchVal & "%' OR c.customer_name LIKE '%" & searchVal & "%' "
-                End If
-                sql &= "ORDER BY p.item_name"
-
+                sql = "SELECT customer_name, address FROM customer"
+            Case 6
+                sql = "SELECT item_name, color, size, selling_price FROM product WHERE selling_price BETWEEN 500.00 AND 2000.00"
+            Case 7
+                sql = "SELECT customer_name, address FROM customer WHERE address LIKE '%Manila%'"
+            Case 8
+                sql = "SELECT COUNT(*) AS 'Total Shipped After April 1' FROM purchases WHERE shipping_date > '2025-04-01'"
             Case 9
-
+                sql = "SELECT DISTINCT status FROM purchases"
+            Case 10
+                sql = "SELECT customer_name, address FROM customer ORDER BY customer_name ASC"
+            Case 11
+                sql = "SELECT item_name, color, size, selling_price FROM product ORDER BY selling_price DESC, item_name ASC"
+            Case 12
+                sql = "SELECT item_name, buying_price, selling_price, (selling_price - buying_price) AS profit_margin FROM product WHERE (selling_price - buying_price) > 500.00"
+            Case 13
+                sql = "SELECT customer_name FROM customer WHERE address IS NULL OR address = ''"
+            Case 14
+                sql = "SELECT COUNT(*) AS 'Total Shipped Before April 1' FROM purchases WHERE shipping_date < '2025-04-01'"
+            Case 15
+                sql = "SELECT c.customer_name, p.item_name, pu.down_payment, pu.status, pu.shipping_fee, pu.reservation_date " &
+                      "FROM customer AS c, product AS p, purchases AS pu " &
+                      "WHERE c.customer_id = pu.customer_id AND p.product_id = pu.product_id"
+            Case 16
+                sql = "SELECT p.item_name, b.branch_name, s.last_restocked_date " &
+                      "FROM product AS p, branch AS b, stores AS s " &
+                      "WHERE p.product_id = s.product_id AND b.branch_id = s.branch_id"
+            Case 17
+                sql = "SELECT sp.company_name, p.item_name, pr.supply_price, pr.quantity_supplied, pr.supply_date " &
+                      "FROM supplier AS sp, product AS p, provides AS pr " &
+                      "WHERE sp.supplier_id = pr.supplier_id AND p.product_id = pr.product_id"
+            Case 18
+                sql = "SELECT c.customer_name, p.item_name, pu.reservation_date, pu.shipping_fee, pu.shipping_date " &
+                      "FROM customer AS c, product AS p, purchases AS pu " &
+                      "WHERE c.customer_id = pu.customer_id AND p.product_id = pu.product_id AND pu.status = 'Completed'"
+            Case 19
+                sql = "SELECT co.company_name, COUNT(dt.customer_id) AS total_deliveries " &
+                      "FROM courier co JOIN delivers_to dt ON co.courier_id = dt.courier_id " &
+                      "GROUP BY co.company_name ORDER BY total_deliveries DESC"
+            Case 20
+                sql = "SELECT c.customer_name, p.item_name, pu.reservation_date " &
+                      "FROM customer AS c, product AS p, purchases AS pu " &
+                      "WHERE c.customer_id = pu.customer_id AND p.product_id = pu.product_id ORDER BY c.customer_name ASC"
+            Case 21
+                sql = "SELECT e.employee_name, e.role, b.branch_name, w.scheduled_date " &
+                      "FROM employee AS e, branch AS b, works_in AS w " &
+                      "WHERE e.employee_id = w.employee_id AND b.branch_id = w.branch_id"
+            Case 22
+                sql = "SELECT SUM(prod.selling_price + pu.shipping_fee) AS total_revenue " &
+                      "FROM purchases pu JOIN product prod ON prod.product_id = pu.product_id " &
+                      "WHERE pu.status = 'Completed'"
+            Case 23
+                sql = "SELECT customer_name, address FROM customer WHERE customer_id IN " &
+                      "(SELECT customer_id FROM purchases WHERE shipping_fee > 100.00)"
+            Case 24
+                sql = "SELECT item_name, buying_price, selling_price FROM product WHERE product_id IN " &
+                      "(SELECT product_id FROM provides)"
+            Case 25
+                sql = "SELECT item_name, color, size FROM product WHERE product_id NOT IN " &
+                      "(SELECT product_id FROM purchases)"
+            Case 26
+                sql = "SELECT p.item_name, COUNT(s.branch_id) AS branch_count " &
+                      "FROM product p JOIN stores s ON p.product_id = s.product_id " &
+                      "GROUP BY p.item_name HAVING branch_count = 1"
+            Case 27
+                sql = "SELECT country_origin, COUNT(prov.product_id) AS total_products " &
+                      "FROM supplier AS s JOIN provides AS prov ON s.supplier_id = prov.supplier_id " &
+                      "GROUP BY country_origin ORDER BY total_products DESC"
+            Case 28
+                sql = "SELECT employee_name, role FROM employee AS e WHERE NOT EXISTS " &
+                      "(SELECT * FROM works_in AS w WHERE e.employee_id = w.employee_id AND w.scheduled_date = CURDATE())"
+            Case 29
+                sql = "SELECT c.customer_name, p.item_name, pu.reservation_date, pu.down_payment, pu.status " &
+                      "FROM customer AS c, product AS p, purchases AS pu " &
+                      "WHERE c.customer_id = pu.customer_id AND p.product_id = pu.product_id AND pu.status = 'Pending' " &
+                      "ORDER BY pu.reservation_date ASC"
+            Case 30
+                sql = "SELECT s.company_name, SUM(pr.quantity_supplied) AS total_quantity " &
+                      "FROM supplier AS s JOIN provides AS pr ON s.supplier_id = pr.supplier_id " &
+                      "GROUP BY s.company_name ORDER BY total_quantity DESC LIMIT 1"
+            Case 99
                 sql = "SELECT p.product_id AS ID, p.item_name AS Name, s.quantity AS 'Branch Qty', " &
                       "p.color AS Color, p.size AS Size " &
                       "FROM stores s " &
@@ -776,18 +751,16 @@ Public Class MainPanel
                       "INNER JOIN branch b ON s.branch_id = b.branch_id " &
                       "WHERE b.branch_name = '" & cboReport.Text.Replace("'", "''") & "'"
             Case Else
-
                 Return "SELECT 'Invalid report selected' AS Error"
         End Select
 
         Return sql
     End Function
-    Private Sub cboReport_SelectedIndexChanged(sender As Object, e As EventArgs)
-
+    Private Sub cboReport_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboReport.SelectedIndexChanged
         If choice = 9 Then
             Dim branchSearch = cboReport.Text.Trim
 
-            Dim sql = GetReportQuery(9, "")
+            Dim sql = GetReportQuery(99, "")
             dgvReport.DataSource = getDataTable(sql)
             dgvReport.AutoResizeColumns
         End If
@@ -825,6 +798,7 @@ Public Class MainPanel
             Case 3
 
                 LoadSuppliers("")
+                If chkReportDefect IsNot Nothing Then chkReportDefect.Checked = False
 
             Case 4
 
@@ -972,32 +946,7 @@ Public Class MainPanel
             LoadSuppliers(txtSearchSupplier.Text)
         End If
     End Sub
-    Private Sub dgvSuppliers_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSuppliers.CellClick
 
-        If e.RowIndex >= 0 Then
-            Try
-                Dim row = dgvSuppliers.Rows(e.RowIndex)
-                Dim selectedSupplierID = row.Cells("ID").Value.ToString
-
-
-                Dim sqlProducts = "SELECT p.item_name AS 'Product Supplied', " &
-                                  "pr.supply_date AS 'Date Supplied', " &
-                                  "pr.supply_price AS 'Wholesale Cost', " &
-                                  "pr.quantity_supplied AS 'Qty' " &
-                                  "FROM provides pr " &
-                                  "INNER JOIN product p ON pr.product_id = p.product_id " &
-                                  "WHERE pr.supplier_id = " & selectedSupplierID & " " &
-                                  "ORDER BY pr.supply_date DESC"
-
-                dgvProvidedProducts.DataSource = getDataTable(sqlProducts)
-                dgvProvidedProducts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-                dgvProvidedProducts.ClearSelection()
-
-            Catch ex As Exception
-                MsgBox("Error loading supplied products: " & ex.Message, MsgBoxStyle.Critical)
-            End Try
-        End If
-    End Sub
     Private Sub LoadAdminData(searchTerm As String)
         Dim searchVal As String = searchTerm.Replace("'", "''").Trim()
 
@@ -1120,7 +1069,7 @@ Public Class MainPanel
             MsgBox("Export cancelled. A valid name is required for the export signature.", MsgBoxStyle.Exclamation)
             Return
         End If
-        ExportGridToCSV(dgvData, filePrefix, signatory)
+        exportgridtocsv(dgvData, filePrefix, signatory)
     End Sub
     Public Sub exportgridtocsv(dgv As DataGridView, filePrefix As String, signatoryName As String)
         If dgv.Rows.Count = 0 OrElse (dgv.Rows.Count = 1 AndAlso dgv.Rows(0).IsNewRow) Then
@@ -1183,5 +1132,240 @@ Public Class MainPanel
                 MsgBox("Error saving configuration: " & ex.Message, MsgBoxStyle.Critical)
             End Try
         End If
+    End Sub
+    Private Sub dgvProvidedProducts_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvProvidedProducts.CellDoubleClick
+        If e.RowIndex >= 0 Then
+            Dim row = dgvProvidedProducts.Rows(e.RowIndex)
+            Dim prodName = row.Cells("Product Supplied").Value.ToString()
+            Dim supplyDateRaw = row.Cells("Date Supplied").Value.ToString()
+
+            Dim parsedDate As Date
+            If Not Date.TryParse(supplyDateRaw, parsedDate) Then Return
+            Dim supplyDate = parsedDate.ToString("yyyy-MM-dd")
+
+            Dim supplierName = txtField1.Text.Trim()
+            If supplierName = "" Then Return
+
+            Dim ans = InputBox($"How many units of '{prodName}' from this batch are you reporting?{vbCrLf}{vbCrLf}Type 'D-5' for 5 Damaged units.{vbCrLf}Type 'R-5' for 5 Returned units.", "Report Inventory Shrinkage")
+
+            If ans.Trim() <> "" AndAlso ans.Length >= 3 AndAlso ans.Contains("-") Then
+                Dim parts = ans.Split("-")
+                Dim typeCode = parts(0).ToUpper().Trim()
+                Dim qtyRaw = parts(1).Trim()
+
+                Dim typeStr = If(typeCode = "D", "Damaged", "Returned")
+                Dim qty As Integer
+
+                If Integer.TryParse(qtyRaw, qty) AndAlso qty > 0 Then
+                    Dim res = service.ProcessSupplierAdjustment(supplierName, prodName, supplyDate, qty, typeStr)
+
+                    If res.Success Then
+                        MsgBox(res.Message, MsgBoxStyle.Information, "Record Updated")
+
+                        Dim selectedSupplierID = dgvSuppliers.CurrentRow.Cells("ID").Value.ToString()
+                        Dim sqlProducts = "SELECT p.item_name AS 'Product Supplied', " &
+                                          "pr.supply_date AS 'Date Supplied', " &
+                                          "pr.supply_price AS 'Wholesale Cost', " &
+                                          "pr.quantity_supplied AS 'Qty Bought', " &
+                                          "pr.returned_qty AS 'Returned', " &
+                                          "pr.damaged_qty AS 'Damaged', " &
+                                          "pr.status AS 'Batch Status' " &
+                                          "FROM provides pr INNER JOIN product p ON pr.product_id = p.product_id " &
+                                          "WHERE pr.supplier_id = " & selectedSupplierID & " ORDER BY pr.supply_date DESC"
+                        dgvProvidedProducts.DataSource = getDataTable(sqlProducts)
+                    Else
+                        MsgBox(res.Message, MsgBoxStyle.Critical, "Action Failed")
+                    End If
+                Else
+                    MsgBox("Invalid format. Please type it exactly like 'D-5' or 'R-2'.", MsgBoxStyle.Exclamation)
+                End If
+            End If
+        End If
+    End Sub
+
+    Private Sub chkReportDefect_CheckedChanged(sender As Object, e As EventArgs) Handles chkReportDefect.CheckedChanged
+        Dim isReporting = chkReportDefect.Checked
+
+        ToggleDefectControls(isReporting)
+
+        Label13.Visible = isReporting
+        If Not isReporting Then
+            txtDefectQty.Clear()
+            cboDefectType.SelectedIndex = -1
+
+        End If
+    End Sub
+    Private Sub dgvSuppliers_CellClick(sender As Object, e As DataGridViewCellEventArgs) Handles dgvSuppliers.CellClick
+        If e.RowIndex >= 0 Then
+            Try
+                Dim row = dgvSuppliers.Rows(e.RowIndex)
+                Dim selectedSupplierID = row.Cells("ID").Value.ToString
+
+                Dim sqlProducts = "SELECT p.item_name AS 'Product Supplied', " &
+                                  "pr.supply_date AS 'Date Supplied', " &
+                                  "pr.supply_price AS 'Wholesale Cost', " &
+                                  "pr.quantity_supplied AS 'Qty Bought', " &
+                                  "pr.returned_qty AS 'Returned', " &
+                                  "pr.damaged_qty AS 'Damaged', " &
+                                  "pr.status AS 'Batch Status' " &
+                                  "FROM provides pr " &
+                                  "INNER JOIN product p ON pr.product_id = p.product_id " &
+                                  "WHERE pr.supplier_id = " & selectedSupplierID & " " &
+                                  "ORDER BY pr.supply_date DESC"
+
+                dgvProvidedProducts.DataSource = getDataTable(sqlProducts)
+                dgvProvidedProducts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                dgvProvidedProducts.ClearSelection()
+
+            Catch ex As Exception
+                MsgBox("Error loading supplied products: " & ex.Message, MsgBoxStyle.Critical)
+            End Try
+        End If
+    End Sub
+    Private Sub btnReportDefect_Click(sender As Object, e As EventArgs) Handles btnReportDefect.Click
+        If dgvProvidedProducts.CurrentRow Is Nothing Then
+            MsgBox("Please click on a specific product batch in the table first.", MsgBoxStyle.Exclamation, "No Batch Selected")
+            Return
+        End If
+
+        Dim qty As Integer
+        If Not Integer.TryParse(txtDefectQty.Text.Trim(), qty) OrElse qty <= 0 Then
+            MsgBox("Please enter a valid whole number for the quantity.", MsgBoxStyle.Exclamation, "Invalid Quantity")
+            Return
+        End If
+
+        Dim typeStr As String = cboDefectType.Text.Trim()
+        If typeStr <> "Damaged" AndAlso typeStr <> "Returned" Then
+            MsgBox("Please select either 'Damaged' or 'Returned' from the dropdown.", MsgBoxStyle.Exclamation, "Select Type")
+            Return
+        End If
+
+        Try
+            If dgvSuppliers.CurrentRow Is Nothing Then Return
+            Dim supplierName = dgvSuppliers.CurrentRow.Cells("Company Name").Value.ToString()
+            Dim row = dgvProvidedProducts.CurrentRow
+            Dim prodName = row.Cells("Product Supplied").Value.ToString()
+
+            Dim supplyDateRaw = row.Cells("Date Supplied").Value.ToString()
+            Dim parsedDate As Date
+            If Not Date.TryParse(supplyDateRaw, parsedDate) Then Return
+            Dim supplyDate = parsedDate.ToString("yyyy-MM-dd")
+
+            Dim res = service.ProcessSupplierAdjustment(supplierName, prodName, supplyDate, qty, typeStr)
+
+            If res.Success Then
+                MsgBox(res.Message, MsgBoxStyle.Information, "Adjustment Successful")
+
+
+                chkReportDefect.Checked = False
+
+                Dim selectedSupplierID = dgvSuppliers.CurrentRow.Cells("ID").Value.ToString()
+                Dim sqlProducts = "SELECT p.item_name AS 'Product Supplied', " &
+                                  "pr.supply_date AS 'Date Supplied', " &
+                                  "pr.supply_price AS 'Wholesale Cost', " &
+                                  "pr.quantity_supplied AS 'Qty Bought', " &
+                                  "pr.returned_qty AS 'Returned', " &
+                                  "pr.damaged_qty AS 'Damaged', " &
+                                  "pr.status AS 'Batch Status' " &
+                                  "FROM provides pr INNER JOIN product p ON pr.product_id = p.product_id " &
+                                  "WHERE pr.supplier_id = " & selectedSupplierID & " ORDER BY pr.supply_date DESC"
+                dgvProvidedProducts.DataSource = getDataTable(sqlProducts)
+            Else
+                MsgBox(res.Message, MsgBoxStyle.Critical, "Action Failed")
+            End If
+
+        Catch ex As Exception
+            MsgBox("System Error: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
+    End Sub
+    Private Sub SetupDefectUI()
+
+        If cboDefectType IsNot Nothing Then
+            cboDefectType.Items.Clear()
+            cboDefectType.Items.Add("Damaged")
+            cboDefectType.Items.Add("Returned")
+
+            cboDefectType.DropDownStyle = ComboBoxStyle.DropDownList
+        End If
+
+
+        If chkReportDefect IsNot Nothing Then
+            chkReportDefect.Checked = False
+        End If
+
+        ToggleDefectControls(False)
+    End Sub
+
+    Private Sub ToggleDefectControls(isVisible As Boolean)
+        If txtDefectQty IsNot Nothing Then txtDefectQty.Visible = isVisible
+        If cboDefectType IsNot Nothing Then cboDefectType.Visible = isVisible
+        If btnReportDefect IsNot Nothing Then btnReportDefect.Visible = isVisible
+        If Label14 IsNot Nothing Then Label14.Visible = isVisible
+        If Label13 IsNot Nothing Then Label13.Visible = isVisible
+    End Sub
+    Private Sub cboCategory_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboCategory.SelectedIndexChanged
+        cboMasterReport.Items.Clear()
+
+        Select Case cboCategory.Text
+            Case "1. Employees & Staff"
+                cboMasterReport.Items.Add("1 - Retrieve all records of staff members")
+                cboMasterReport.Items.Add("2 - Retrieve the full name and role of all employees")
+                cboMasterReport.Items.Add("3 - Retrieve the email address of all Staff")
+                cboMasterReport.Items.Add("21 - Employee branch schedules")
+                cboMasterReport.Items.Add("28 - Employees not scheduled to work today")
+
+            Case "2. Products & Inventory"
+                cboMasterReport.Items.Add("4 - Products whose buying price > 500.00")
+                cboMasterReport.Items.Add("6 - Products selling price between 500 and 2000")
+                cboMasterReport.Items.Add("11 - Products ordered by selling price DESC, name ASC")
+                cboMasterReport.Items.Add("12 - Products with profit margin > 500")
+                cboMasterReport.Items.Add("16 - Products along with their storage branch and restock date")
+                cboMasterReport.Items.Add("24 - Products supplied by at least one supplier")
+                cboMasterReport.Items.Add("25 - Products that have never been purchased")
+                cboMasterReport.Items.Add("26 - Products available in only one branch")
+
+            Case "3. Customers & Demographics"
+                cboMasterReport.Items.Add("5 - Names and addresses of all customers")
+                cboMasterReport.Items.Add("7 - Customers whose address contains 'Manila'")
+                cboMasterReport.Items.Add("10 - All customers ordered alphabetically")
+                cboMasterReport.Items.Add("13 - Customers without a registered address")
+                cboMasterReport.Items.Add("23 - Customers with shipping fee > 100.00")
+
+            Case "4. Sales, Orders & Revenue"
+                cboMasterReport.Items.Add("8 - Total purchases shipped after April 1, 2025")
+                cboMasterReport.Items.Add("9 - Distinct statuses used across all purchases")
+                cboMasterReport.Items.Add("14 - Total purchases shipped before April 1, 2025")
+                cboMasterReport.Items.Add("15 - Customer purchase details (Down payment, status, fee)")
+                cboMasterReport.Items.Add("18 - Completed purchases with customer and product names")
+                cboMasterReport.Items.Add("20 - Customer purchases ordered alphabetically")
+                cboMasterReport.Items.Add("22 - Total revenue from completed purchases")
+                cboMasterReport.Items.Add("29 - Pending purchases ordered by earliest date")
+
+            Case "5. Suppliers & Logistics"
+                cboMasterReport.Items.Add("17 - Supplier transactions (Name, price, qty, date)")
+                cboMasterReport.Items.Add("19 - Courier handling the most deliveries")
+                cboMasterReport.Items.Add("27 - Number of products supplied per country of origin")
+                cboMasterReport.Items.Add("30 - Supplier with greatest total quantity supplied")
+        End Select
+
+        ' Auto-select the first query in the new list so it's never blank
+        If cboMasterReport.Items.Count > 0 Then
+            cboMasterReport.SelectedIndex = 0
+        End If
+    End Sub
+    Private Sub btnLoadMasterReport_Click(sender As Object, e As EventArgs) Handles btnLoadMasterReport.Click
+        If cboMasterReport.Text = "" Then Return
+
+        Dim reportString = cboMasterReport.Text.Split("-"c)(0).Trim()
+        Dim reportIndex As Integer = Val(reportString)
+
+        Dim sql = GetReportQuery(reportIndex, "")
+
+        Try
+            dgvMasterReport.DataSource = getDataTable(sql)
+            dgvMasterReport.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message, MsgBoxStyle.Critical)
+        End Try
     End Sub
 End Class

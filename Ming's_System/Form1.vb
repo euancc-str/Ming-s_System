@@ -98,12 +98,7 @@
         frmTransaction.Show()
     End Sub
 
-    Private Sub ViewReportsToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ViewReportsToolStripMenuItem.Click
-        CloseActiveWindows()
-        operation = 5
-        MainPanel.MdiParent = Me
-        MainPanel.Show()
-    End Sub
+
 
     ' Blank handler to prevent designer errors
     Private Sub ProductToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ProductToolStripMenuItem.Click

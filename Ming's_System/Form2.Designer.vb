@@ -36,7 +36,6 @@ Partial Class MainPanel
         btnClear = New Button()
         dgvReport = New DataGridView()
         btnDelete = New Button()
-        cbBox1 = New ComboBox()
         btnSave = New Button()
         lblField7 = New Label()
         txtField7 = New TextBox()
@@ -44,7 +43,6 @@ Partial Class MainPanel
         txtField6 = New TextBox()
         lblField5 = New Label()
         txtField5 = New TextBox()
-        lblField4 = New Label()
         lblField3 = New Label()
         txtField3 = New TextBox()
         lblField2 = New Label()
@@ -67,6 +65,12 @@ Partial Class MainPanel
         Label2 = New Label()
         txtGlobalSearch = New TextBox()
         TabPage4 = New TabPage()
+        Label14 = New Label()
+        Label13 = New Label()
+        btnReportDefect = New Button()
+        cboDefectType = New ComboBox()
+        txtDefectQty = New TextBox()
+        chkReportDefect = New CheckBox()
         dgvProvidedProducts = New DataGridView()
         txtSearchSupplier = New TextBox()
         dgvSuppliers = New DataGridView()
@@ -90,6 +94,13 @@ Partial Class MainPanel
         txtDBUser = New TextBox()
         Label9 = New Label()
         txtServerIP = New TextBox()
+        TabPage8 = New TabPage()
+        Label15 = New Label()
+        a = New Label()
+        dgvMasterReport = New DataGridView()
+        btnLoadMasterReport = New Button()
+        cboMasterReport = New ComboBox()
+        cboCategory = New ComboBox()
         TabControl1.SuspendLayout()
         TabPage1.SuspendLayout()
         CType(dgvData, ComponentModel.ISupportInitialize).BeginInit()
@@ -109,6 +120,8 @@ Partial Class MainPanel
         CType(dgvBranches, ComponentModel.ISupportInitialize).BeginInit()
         TabPage6.SuspendLayout()
         TabPage7.SuspendLayout()
+        TabPage8.SuspendLayout()
+        CType(dgvMasterReport, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' TabControl1
@@ -120,6 +133,7 @@ Partial Class MainPanel
         TabControl1.Controls.Add(TabPage5)
         TabControl1.Controls.Add(TabPage6)
         TabControl1.Controls.Add(TabPage7)
+        TabControl1.Controls.Add(TabPage8)
         TabControl1.Location = New Point(2, 12)
         TabControl1.Name = "TabControl1"
         TabControl1.SelectedIndex = 0
@@ -141,7 +155,6 @@ Partial Class MainPanel
         TabPage1.Controls.Add(btnClear)
         TabPage1.Controls.Add(dgvReport)
         TabPage1.Controls.Add(btnDelete)
-        TabPage1.Controls.Add(cbBox1)
         TabPage1.Controls.Add(btnSave)
         TabPage1.Controls.Add(lblField7)
         TabPage1.Controls.Add(txtField7)
@@ -149,7 +162,6 @@ Partial Class MainPanel
         TabPage1.Controls.Add(txtField6)
         TabPage1.Controls.Add(lblField5)
         TabPage1.Controls.Add(txtField5)
-        TabPage1.Controls.Add(lblField4)
         TabPage1.Controls.Add(lblField3)
         TabPage1.Controls.Add(txtField3)
         TabPage1.Controls.Add(lblField2)
@@ -179,7 +191,7 @@ Partial Class MainPanel
         cboSeries.Font = New Font("Segoe UI", 13F)
         cboSeries.FormattingEnabled = True
         cboSeries.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
-        cboSeries.Location = New Point(1378, 199)
+        cboSeries.Location = New Point(1379, 88)
         cboSeries.Name = "cboSeries"
         cboSeries.Size = New Size(299, 38)
         cboSeries.TabIndex = 58
@@ -187,7 +199,7 @@ Partial Class MainPanel
         ' lblSeries
         ' 
         lblSeries.AutoSize = True
-        lblSeries.Location = New Point(1378, 169)
+        lblSeries.Location = New Point(1379, 58)
         lblSeries.Name = "lblSeries"
         lblSeries.Size = New Size(48, 20)
         lblSeries.TabIndex = 57
@@ -278,16 +290,6 @@ Partial Class MainPanel
         btnDelete.Text = "Delete Record?"
         btnDelete.UseVisualStyleBackColor = False
         ' 
-        ' cbBox1
-        ' 
-        cbBox1.Font = New Font("Segoe UI", 13F)
-        cbBox1.FormattingEnabled = True
-        cbBox1.Items.AddRange(New Object() {"Available", "Out of Stock", "Pre-Order"})
-        cbBox1.Location = New Point(1378, 86)
-        cbBox1.Name = "cbBox1"
-        cbBox1.Size = New Size(299, 38)
-        cbBox1.TabIndex = 48
-        ' 
         ' btnSave
         ' 
         btnSave.Location = New Point(1437, 265)
@@ -347,15 +349,6 @@ Partial Class MainPanel
         txtField5.Name = "txtField5"
         txtField5.Size = New Size(269, 36)
         txtField5.TabIndex = 41
-        ' 
-        ' lblField4
-        ' 
-        lblField4.AutoSize = True
-        lblField4.Location = New Point(1378, 56)
-        lblField4.Name = "lblField4"
-        lblField4.Size = New Size(49, 20)
-        lblField4.TabIndex = 40
-        lblField4.Text = "Status"
         ' 
         ' lblField3
         ' 
@@ -568,6 +561,12 @@ Partial Class MainPanel
         ' 
         ' TabPage4
         ' 
+        TabPage4.Controls.Add(Label14)
+        TabPage4.Controls.Add(Label13)
+        TabPage4.Controls.Add(btnReportDefect)
+        TabPage4.Controls.Add(cboDefectType)
+        TabPage4.Controls.Add(txtDefectQty)
+        TabPage4.Controls.Add(chkReportDefect)
         TabPage4.Controls.Add(dgvProvidedProducts)
         TabPage4.Controls.Add(txtSearchSupplier)
         TabPage4.Controls.Add(dgvSuppliers)
@@ -579,6 +578,58 @@ Partial Class MainPanel
         TabPage4.TabIndex = 3
         TabPage4.Text = "Suppliers & Partners"
         TabPage4.UseVisualStyleBackColor = True
+        ' 
+        ' Label14
+        ' 
+        Label14.AutoSize = True
+        Label14.Location = New Point(276, 163)
+        Label14.Name = "Label14"
+        Label14.Size = New Size(40, 20)
+        Label14.TabIndex = 89
+        Label14.Text = "Type"
+        ' 
+        ' Label13
+        ' 
+        Label13.AutoSize = True
+        Label13.Location = New Point(211, 110)
+        Label13.Name = "Label13"
+        Label13.Size = New Size(114, 20)
+        Label13.TabIndex = 88
+        Label13.Text = "Defect quantity:"
+        ' 
+        ' btnReportDefect
+        ' 
+        btnReportDefect.Location = New Point(521, 114)
+        btnReportDefect.Name = "btnReportDefect"
+        btnReportDefect.Size = New Size(142, 67)
+        btnReportDefect.TabIndex = 87
+        btnReportDefect.Text = "Report Shrinkage/Return"
+        btnReportDefect.UseVisualStyleBackColor = True
+        ' 
+        ' cboDefectType
+        ' 
+        cboDefectType.FormattingEnabled = True
+        cboDefectType.Location = New Point(340, 163)
+        cboDefectType.Name = "cboDefectType"
+        cboDefectType.Size = New Size(151, 28)
+        cboDefectType.TabIndex = 86
+        ' 
+        ' txtDefectQty
+        ' 
+        txtDefectQty.Location = New Point(340, 110)
+        txtDefectQty.Name = "txtDefectQty"
+        txtDefectQty.Size = New Size(151, 27)
+        txtDefectQty.TabIndex = 85
+        ' 
+        ' chkReportDefect
+        ' 
+        chkReportDefect.AutoSize = True
+        chkReportDefect.Location = New Point(211, 38)
+        chkReportDefect.Name = "chkReportDefect"
+        chkReportDefect.Size = New Size(261, 24)
+        chkReportDefect.TabIndex = 0
+        chkReportDefect.Text = "Flag Items as Damaged / Returned"
+        chkReportDefect.UseVisualStyleBackColor = True
         ' 
         ' dgvProvidedProducts
         ' 
@@ -827,6 +878,74 @@ Partial Class MainPanel
         txtServerIP.Size = New Size(270, 41)
         txtServerIP.TabIndex = 0
         ' 
+        ' TabPage8
+        ' 
+        TabPage8.Controls.Add(Label15)
+        TabPage8.Controls.Add(a)
+        TabPage8.Controls.Add(dgvMasterReport)
+        TabPage8.Controls.Add(btnLoadMasterReport)
+        TabPage8.Controls.Add(cboMasterReport)
+        TabPage8.Controls.Add(cboCategory)
+        TabPage8.Location = New Point(4, 29)
+        TabPage8.Name = "TabPage8"
+        TabPage8.Padding = New Padding(3)
+        TabPage8.Size = New Size(1843, 839)
+        TabPage8.TabIndex = 7
+        TabPage8.Text = "Reports"
+        TabPage8.UseVisualStyleBackColor = True
+        ' 
+        ' Label15
+        ' 
+        Label15.AutoSize = True
+        Label15.Location = New Point(285, 160)
+        Label15.Name = "Label15"
+        Label15.Size = New Size(103, 20)
+        Label15.TabIndex = 5
+        Label15.Text = "Master Report"
+        ' 
+        ' a
+        ' 
+        a.AutoSize = True
+        a.Location = New Point(296, 96)
+        a.Name = "a"
+        a.Size = New Size(69, 20)
+        a.TabIndex = 4
+        a.Text = "Category"
+        ' 
+        ' dgvMasterReport
+        ' 
+        dgvMasterReport.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        dgvMasterReport.Location = New Point(195, 333)
+        dgvMasterReport.Name = "dgvMasterReport"
+        dgvMasterReport.RowHeadersWidth = 51
+        dgvMasterReport.Size = New Size(1151, 408)
+        dgvMasterReport.TabIndex = 3
+        ' 
+        ' btnLoadMasterReport
+        ' 
+        btnLoadMasterReport.Location = New Point(739, 133)
+        btnLoadMasterReport.Name = "btnLoadMasterReport"
+        btnLoadMasterReport.Size = New Size(94, 29)
+        btnLoadMasterReport.TabIndex = 2
+        btnLoadMasterReport.Text = "Load Report"
+        btnLoadMasterReport.UseVisualStyleBackColor = True
+        ' 
+        ' cboMasterReport
+        ' 
+        cboMasterReport.FormattingEnabled = True
+        cboMasterReport.Location = New Point(408, 160)
+        cboMasterReport.Name = "cboMasterReport"
+        cboMasterReport.Size = New Size(199, 28)
+        cboMasterReport.TabIndex = 1
+        ' 
+        ' cboCategory
+        ' 
+        cboCategory.FormattingEnabled = True
+        cboCategory.Location = New Point(408, 93)
+        cboCategory.Name = "cboCategory"
+        cboCategory.Size = New Size(199, 28)
+        cboCategory.TabIndex = 0
+        ' 
         ' MainPanel
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
@@ -860,6 +979,9 @@ Partial Class MainPanel
         TabPage6.ResumeLayout(False)
         TabPage7.ResumeLayout(False)
         TabPage7.PerformLayout()
+        TabPage8.ResumeLayout(False)
+        TabPage8.PerformLayout()
+        CType(dgvMasterReport, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
     End Sub
 
@@ -877,7 +999,6 @@ Partial Class MainPanel
     Friend WithEvents btnClear As Button
     Friend WithEvents dgvReport As DataGridView
     Friend WithEvents btnDelete As Button
-    Friend WithEvents cbBox1 As ComboBox
     Friend WithEvents btnSave As Button
     Friend WithEvents lblField7 As Label
     Friend WithEvents txtField7 As TextBox
@@ -885,7 +1006,6 @@ Partial Class MainPanel
     Friend WithEvents txtField6 As TextBox
     Friend WithEvents lblField5 As Label
     Friend WithEvents txtField5 As TextBox
-    Friend WithEvents lblField4 As Label
     Friend WithEvents lblField3 As Label
     Friend WithEvents txtField3 As TextBox
     Friend WithEvents lblField2 As Label
@@ -931,4 +1051,17 @@ Partial Class MainPanel
     Friend WithEvents txtDBUser As TextBox
     Friend WithEvents Label9 As Label
     Friend WithEvents txtServerIP As TextBox
+    Friend WithEvents Label14 As Label
+    Friend WithEvents Label13 As Label
+    Friend WithEvents btnReportDefect As Button
+    Friend WithEvents cboDefectType As ComboBox
+    Friend WithEvents txtDefectQty As TextBox
+    Friend WithEvents chkReportDefect As CheckBox
+    Friend WithEvents TabPage8 As TabPage
+    Friend WithEvents btnLoadMasterReport As Button
+    Friend WithEvents cboMasterReport As ComboBox
+    Friend WithEvents cboCategory As ComboBox
+    Friend WithEvents dgvMasterReport As DataGridView
+    Friend WithEvents Label15 As Label
+    Friend WithEvents a As Label
 End Class

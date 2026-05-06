@@ -90,7 +90,6 @@ Public Class TransactionController
     Public Function ResolveCustomer(customerName As String, address As String) As Integer
         readquery($"SELECT customer_id FROM customer WHERE customer_name = '{customerName}'")
         If Not cmdread.HasRows Then
-            ' THE FIX: Encrypt the address coming from the Sales Screen!
             Dim secureAddress = EncryptData(address)
             readquery($"INSERT INTO customer (customer_name, address) VALUES ('{customerName}', '{secureAddress}')")
         End If
@@ -113,9 +112,9 @@ Public Class TransactionController
         Return GetId("SELECT employee_id FROM employee WHERE employee_name = '" & employeeName & "'", "employee_id")
     End Function
 
-    Public Function ResolveProduct(itemName As String, color As String, size As String, buyingPrice As Decimal, sellingPrice As Decimal, status As String, initialStock As Integer, seriesName As String) As Integer
+    Public Function ResolveProduct(itemName As String, color As String, size As String, buyingPrice As Decimal, sellingPrice As Decimal, initialStock As Integer, seriesName As String) As Integer
 
-        ' Safely build the Series subquery (defaults to NULL if they leave it blank)
+
         Dim seriesIdSql = "NULL"
         If Not String.IsNullOrWhiteSpace(seriesName) AndAlso seriesName <> "None" Then
             seriesIdSql = $"(SELECT series_id FROM series WHERE series_name = '{seriesName}')"
@@ -124,8 +123,8 @@ Public Class TransactionController
         readquery($"SELECT product_id FROM product WHERE item_name = '{itemName}' AND color = '{color}' AND size = '{size}'")
 
         If Not cmdread.HasRows Then
-            readquery($"INSERT INTO product (item_name, buying_price, selling_price, color, size, status, stock_count, series_id) " &
-                      $"VALUES ('{itemName}', {buyingPrice}, {sellingPrice}, '{color}', '{size}', '{status}', {initialStock}, {seriesIdSql})")
+            readquery($"INSERT INTO product (item_name, buying_price, selling_price, color, size, stock_count, series_id) " &
+                      $"VALUES ('{itemName}', {buyingPrice}, {sellingPrice}, '{color}', '{size}', {initialStock}, {seriesIdSql})")
         End If
 
         Return GetId($"SELECT product_id FROM product WHERE item_name='{itemName}' AND color='{color}' AND size='{size}'", "product_id")
@@ -476,8 +475,34 @@ Public Class TransactionController
                 End Using
             End Using
         Catch ex As Exception
-            ' If it fails to decrypt (e.g., old unencrypted data), just return the raw text
             Return cipherText
         End Try
+    End Function
+    Public Function ProcessSupplierAdjustment(supplierId As Integer, productId As Integer, supplyDate As String, qty As Integer, adjustmentType As String) As Boolean
+        Try
+            readquery("START TRANSACTION")
+
+
+            readquery($"UPDATE product SET stock_count = stock_count - {qty} WHERE product_id = {productId}")
+
+            Dim colToUpdate = If(adjustmentType = "Damaged", "damaged_qty", "returned_qty")
+            Dim newStatus = If(adjustmentType = "Damaged", "Has Damages", "Partially Returned")
+
+            readquery($"UPDATE provides SET {colToUpdate} = {colToUpdate} + {qty}, status = '{newStatus}' " &
+                      $"WHERE supplier_id = {supplierId} AND product_id = {productId} AND supply_date = '{supplyDate}'")
+
+
+            Dim logMsg = $"SUPPLIER ADJUSTMENT: Marked {qty} units of Product ID {productId} as {adjustmentType} (Supplier ID: {supplierId})."
+            readquery($"INSERT INTO audit_logs (action_description) VALUES ('{logMsg}')")
+
+            readquery("COMMIT")
+            Return True
+        Catch ex As Exception
+            readquery("ROLLBACK")
+            Throw New Exception("Database Adjustment Failed: " & ex.Message)
+        End Try
+    End Function
+    Public Function GetProductIdByName(itemName As String) As Integer
+        Return GetId($"SELECT product_id FROM product WHERE item_name = '{itemName.Replace("'", "''")}' LIMIT 1", "product_id")
     End Function
 End Class

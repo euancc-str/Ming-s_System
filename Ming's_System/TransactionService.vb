@@ -26,7 +26,6 @@ Public Class TransactionService
         Public Size As String
         Public BuyPrice As Decimal
         Public SellPrice As Decimal
-        Public Status As String
         Public InitialStock As Integer
         Public Series As String
     End Class
@@ -116,7 +115,7 @@ Public Class TransactionService
         Dim suppId = If(req.Supplier.IsNew, _repo.ResolveSupplier(req.Supplier.Name, req.Supplier.ContactPerson, req.Supplier.CountryOrigin), _repo.GetExistingSupplierId(req.Supplier.Name))
         If suppId = -1 Then Return New ServiceResult(False, "Supplier not found.")
 
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim finalBuyPrice = If(req.Product.IsNew, req.Product.BuyPrice, _repo.GetBuyingPrice(prodId))
@@ -144,7 +143,7 @@ Public Class TransactionService
         Dim custId = If(req.Customer.IsNew, _repo.ResolveCustomer(req.Customer.Name, req.Customer.Address), _repo.GetExistingCustomerId(req.Customer.Name))
         If custId = -1 Then Return New ServiceResult(False, "Customer not found.")
 
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim currentStock = If(req.SalesLocation = "Main Warehouse", _repo.GetWarehouseStock(prodId), _repo.GetBranchStock(prodId, req.SalesLocation))
@@ -172,7 +171,7 @@ Public Class TransactionService
         Dim branchId = If(req.Branch.IsNew, _repo.ResolveBranch(req.Branch.Name, req.Branch.Address, req.Branch.OperatingHours), _repo.GetExistingBranchId(req.Branch.Name))
         If branchId = -1 Then Return New ServiceResult(False, "Branch not found.")
 
-        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.Status, req.Product.InitialStock, req.Product.Series), req.Product.Id)
+        Dim prodId = If(req.Product.IsNew, _repo.ResolveProduct(req.Product.Name, req.Product.Color, req.Product.Size, req.Product.BuyPrice, req.Product.SellPrice, req.Product.InitialStock, req.Product.Series), req.Product.Id)
         If prodId <= 0 Then Return New ServiceResult(False, "Invalid Product.")
 
         Dim warehouseStock = _repo.GetWarehouseStock(prodId)
@@ -270,6 +269,26 @@ Public Class TransactionService
             Return New ServiceResult(True, $"Successfully retrieved all items from {branchName} to Main Warehouse.")
         Catch ex As Exception
             Return New ServiceResult(False, ex.Message)
+        End Try
+    End Function
+
+    Public Function ProcessSupplierAdjustment(supplierName As String, productName As String, supplyDate As String, qty As Integer, type As String) As ServiceResult
+        If qty <= 0 Then Return New ServiceResult(False, "Quantity must be greater than 0.")
+
+        Dim suppId = _repo.GetExistingSupplierId(supplierName)
+        If suppId <= 0 Then Return New ServiceResult(False, "Could not find supplier ID.")
+
+        Dim prodId = _repo.GetProductIdByName(productName)
+        If prodId <= 0 Then Return New ServiceResult(False, "Could not find product ID.")
+
+        Dim currentStock = _repo.GetWarehouseStock(prodId)
+        If currentStock < qty Then Return New ServiceResult(False, $"Not enough warehouse stock to cover this. Only {currentStock} available.")
+
+        Try
+            _repo.ProcessSupplierAdjustment(suppId, prodId, supplyDate, qty, type)
+            Return New ServiceResult(True, $"Successfully marked {qty} units as {type}!")
+        Catch ex As Exception
+            Return New ServiceResult(False, "Adjustment failed: " & ex.Message)
         End Try
     End Function
 

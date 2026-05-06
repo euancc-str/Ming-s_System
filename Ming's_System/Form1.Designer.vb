@@ -37,7 +37,6 @@ Partial Class Form1
         RecordSaleToolStripMenuItem = New ToolStripMenuItem()
         AssignToBranchToolStripMenuItem = New ToolStripMenuItem()
         AssignWorkScheduleToolStripMenuItem = New ToolStripMenuItem()
-        ViewReportsToolStripMenuItem = New ToolStripMenuItem()
         OperationsToolStripMenuItem = New ToolStripMenuItem()
         OrderManagerToolStripMenuItem = New ToolStripMenuItem()
         MenuStrip1.SuspendLayout()
@@ -46,7 +45,7 @@ Partial Class Form1
         ' MenuStrip1
         ' 
         MenuStrip1.ImageScalingSize = New Size(20, 20)
-        MenuStrip1.Items.AddRange(New ToolStripItem() {ProductToolStripMenuItem, TransactionsToolStripMenuItem, ViewReportsToolStripMenuItem, OperationsToolStripMenuItem})
+        MenuStrip1.Items.AddRange(New ToolStripItem() {ProductToolStripMenuItem, TransactionsToolStripMenuItem, OperationsToolStripMenuItem})
         MenuStrip1.Location = New Point(0, 0)
         MenuStrip1.Name = "MenuStrip1"
         MenuStrip1.Size = New Size(1205, 28)
@@ -133,12 +132,6 @@ Partial Class Form1
         AssignWorkScheduleToolStripMenuItem.Size = New Size(240, 26)
         AssignWorkScheduleToolStripMenuItem.Text = "Assign Work Schedule"
         ' 
-        ' ViewReportsToolStripMenuItem
-        ' 
-        ViewReportsToolStripMenuItem.Name = "ViewReportsToolStripMenuItem"
-        ViewReportsToolStripMenuItem.Size = New Size(110, 24)
-        ViewReportsToolStripMenuItem.Text = "View Reports"
-        ' 
         ' OperationsToolStripMenuItem
         ' 
         OperationsToolStripMenuItem.DropDownItems.AddRange(New ToolStripItem() {OrderManagerToolStripMenuItem})
@@ -182,7 +175,6 @@ Partial Class Form1
     Friend WithEvents RecordSaleToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents AssignToBranchToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents AssignWorkScheduleToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ViewReportsToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents BranchToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OperationsToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OrderManagerToolStripMenuItem As ToolStripMenuItem

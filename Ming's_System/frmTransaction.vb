@@ -296,7 +296,7 @@ Public Class frmTransaction
         lblNewStockCount.Text = "Current Stock:" : txtNewStockCount.ReadOnly = True
         HideProductPriceAndStock()
 
-        SetVisible(False, lblNewSellPrice, txtNewSellPrice, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus, lblSeries, cboSeries)
+        SetVisible(False, lblNewSellPrice, txtNewSellPrice, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblSeries, cboSeries)
     End Sub
     Private Sub ShowNewProductFields()
         lblNewBuyPrice.Text = "Buying Price:" : txtNewBuyPrice.ReadOnly = False
@@ -304,7 +304,7 @@ Public Class frmTransaction
         SetVisible(True, lblNewBuyPrice, txtNewBuyPrice, lblNewStockCount, txtNewStockCount, lblNewSellPrice, txtNewSellPrice)
         Dim isWorkSchedule = (tag1 = TX_WORK_SCHEDULE)
 
-        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblNewStatus, cboNewStatus, lblSeries, cboSeries)
+        SetVisible(Not isWorkSchedule, lblNewColor, txtNewColor, lblNewSize, txtNewSize, lblSeries, cboSeries)
 
         ClearNewProductInputs()
     End Sub
@@ -371,7 +371,6 @@ Public Class frmTransaction
             .SellPrice = actualSellPrice,
             .Color = txtNewColor.Text.Trim(),
             .Size = txtNewSize.Text.Trim(),
-            .Status = cboNewStatus.Text.Trim(),
             .InitialStock = CInt(Val(txtNewStockCount.Text)),
             .Series = cboSeries.Text.Trim()
         }
@@ -578,7 +577,6 @@ Public Class frmTransaction
         txtNewColor.Clear()
         txtNewSize.Clear()
         txtNewStockCount.Clear()
-        cboNewStatus.SelectedIndex = -1
         cboSeries.SelectedIndex = -1
     End Sub
 
